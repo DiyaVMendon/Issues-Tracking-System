@@ -22,6 +22,30 @@ const uploadToCloudinary = (file) => {
   });
 };
 
+const getIssueImagePublicId = (imageUrl) => {
+  const parsedUrl = new URL(imageUrl);
+  if (!parsedUrl.hostname.endsWith("cloudinary.com")) {
+    throw new Error("The issue attachment URL is not a Cloudinary image.");
+  }
+
+  const pathSegments = parsedUrl.pathname.split("/").filter(Boolean);
+  const uploadIndex = pathSegments.indexOf("upload");
+  if (uploadIndex === -1) {
+    throw new Error("The issue attachment URL is invalid.");
+  }
+
+  const publicIdSegments = pathSegments.slice(uploadIndex + 1);
+  if (/^v\d+$/.test(publicIdSegments[0] || "")) {
+    publicIdSegments.shift();
+  }
+  const publicId = publicIdSegments.join("/").replace(/\.[^/.]+$/, "");
+  if (!publicId.startsWith("issue_tracking/issue_images/")) {
+    throw new Error("The issue attachment is outside the expected storage folder.");
+  }
+
+  return publicId;
+};
+
 export const createIssue = async (req, res) => {
   
   try {
@@ -351,6 +375,35 @@ export const addIssueComment = async (req, res) => {
     }
 };
 
+export const deleteIssueAttachment = async (req, res) => {
+  try {
+    const issue = await getAccessibleIssue(req, res);
+    if (!issue) return;
+
+    if (issue.issue_image) {
+      const publicId = getIssueImagePublicId(issue.issue_image);
+      const result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: "image",
+      });
+      if (!["ok", "not found"].includes(result.result)) {
+        return res.status(502).json({
+          message: "Could not delete the issue attachment from storage.",
+        });
+      }
+      issue.issue_image = "";
+      await issue.save();
+    }
+
+    await issue.populate("assigned_to", "name");
+    return res.status(200).json({
+      message: "Issue attachment deleted successfully.",
+      data: issue,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateIssue = async (req, res) => {
     try{
         const {id} = req.params;
@@ -384,5 +437,4 @@ export const deleteIssue = async (req, res) => {
         res.status(500).json({message:error.message})
     }
 }
-
 

@@ -186,6 +186,9 @@
 }
 
 .metadataField > strong {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
   overflow: hidden;
   color: #343148;
   font-size: 11px;
@@ -298,14 +301,114 @@
   border-radius: 8px;
   color: #59566e;
   font-size: 10px;
-  text-decoration: none;
+  text-align: left;
 }
 
-.attachment img {
+.attachmentPreview {
+  position: relative;
+}
+
+.attachmentImageButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.attachmentImageButton img {
+  display: block;
   width: 100%;
   height: 78px;
   border-radius: 5px;
   object-fit: cover;
+}
+
+.attachmentImageButton:hover img {
+  filter: brightness(0.92);
+}
+
+.attachment:hover {
+  border-color: #8c69e2;
+}
+
+.deleteAttachmentIcon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #e0313d;
+  cursor: pointer;
+}
+
+.deleteAttachmentIcon:hover:not(:disabled) {
+  color: #b42332;
+}
+
+.deleteAttachmentIcon:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.imagePreviewBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(15 14 22 / 78%);
+}
+
+.imagePreviewDialog {
+  position: relative;
+  display: grid;
+  max-width: min(100%, 1100px);
+  max-height: 100%;
+  place-items: center;
+}
+
+.imagePreviewDialog img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 120px);
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.imagePreviewClose {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 1;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 50%;
+  background: #25232e;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.attachmentError {
+  margin: 2px 0 0;
+  color: #b42332;
+  font-size: 10px;
 }
 
 .muted {
@@ -545,4 +648,31 @@
   .metadataGrid {
     gap: 9px;
   }
+}
+
+.detailPanel {
+  border-color: var(--theme-border, #292a33);
+  background: var(--theme-surface, #17181f);
+  color: var(--theme-text, #eeedf4);
+}
+
+.panelHeader,
+.detailTabs,
+.comment {
+  border-color: var(--theme-border-subtle, #30313b);
+}
+
+.issueHeading h2,
+.metadataField strong,
+.description,
+.commentBody {
+  color: var(--theme-text, #eeedf4);
+}
+
+.metadataField,
+.attachment,
+.commentForm textarea {
+  border-color: var(--theme-border-subtle, #30313b);
+  background: var(--theme-surface-inset, #1d1e26);
+  color: var(--theme-text, #e8e7ee);
 }

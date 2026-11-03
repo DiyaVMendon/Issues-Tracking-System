@@ -2,9 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
-import AssignedIssuesIcon from "../../components/AssignedIssuesIcon";
-import IssueStatusIcon from "../../components/IssueStatusIcon";
-import NotificationIcon from "../../components/NotificationIcon";
+import AssetIcon from "../../components/AssetIcon";
+import assignedIssuesIcon from "../../assets/icons/assigned-issues.svg";
+import closedIssueIcon from "../../assets/icons/issue-closed.svg";
+import openIssueIcon from "../../assets/icons/issue-open.svg";
+import progressIssueIcon from "../../assets/icons/issue-progress.svg";
+import notificationIcon from "../../assets/icons/notification.svg";
+import UserDropdown from "../userDropdown/userDropdown";
 import IssueDetailPanel from "../admin_issue/admin_issue_comments/IssueDetailPanel";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
 import styles from "./employee_issues.module.css";
@@ -98,7 +102,6 @@ const getAssignedId = (assignedTo) =>
 export default function EmployeeIssues() {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
-  const userName = localStorage.getItem("userName") || "Employee";
   const [issues, setIssues] = useState([]);
   const [summary, setSummary] = useState({
     total: 0,
@@ -136,7 +139,7 @@ export default function EmployeeIssues() {
   }, [search]);
 
   useEffect(() => {
-    if (!localStorage.getItem("accessToken") || !userId) {
+    if (!localStorage.getItem("accessToken")) {
       navigate("/login", { replace: true });
       return undefined;
     }
@@ -293,7 +296,18 @@ export default function EmployeeIssues() {
     }
   };
 
-  const currentUserInitial = userName.charAt(0).toUpperCase();
+  const updateIssueAfterAttachmentRemoval = (updatedIssue) => {
+    const issueId = String(updatedIssue._id || updatedIssue.id);
+    setIssues((currentIssues) =>
+      currentIssues.map((issue) =>
+        String(issue._id || issue.id) === issueId ? updatedIssue : issue,
+      ),
+    );
+    setSelectedIssue(updatedIssue);
+    setPage(1);
+    setRefreshKey((current) => current + 1);
+  };
+
 
   return (
     <section className={dashboardStyles.mainContent} id="employee-issues">
@@ -308,14 +322,10 @@ export default function EmployeeIssues() {
             type="button"
             aria-label="Notifications"
           >
-            <NotificationIcon />
+            <AssetIcon src={notificationIcon} />
             <span className={dashboardStyles.notificationDot} />
           </button>
-          <div className={dashboardStyles.userMenu}>
-            <span className={dashboardStyles.avatar}>{currentUserInitial}</span>
-            <span className={dashboardStyles.userRole}>{userName}</span>
-            <span className={dashboardStyles.chevron}>⌄</span>
-          </div>
+          <UserDropdown />
         </header>
 
         <div className={`${dashboardStyles.dashboardBody} ${styles.issuesBody}`}>
@@ -343,22 +353,22 @@ export default function EmployeeIssues() {
             aria-label="Assigned issue summary"
           >
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.totalCard}`}>
-              <div className={dashboardStyles.statIcon}><AssignedIssuesIcon /></div>
+              <div className={dashboardStyles.statIcon}><AssetIcon src={assignedIssuesIcon} /></div>
               <p>Assigned Issues</p>
               <strong>{loading ? "—" : counts.all}</strong>
             </article>
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.openCard}`}>
-              <div className={dashboardStyles.statIcon}><IssueStatusIcon status="open" /></div>
+              <div className={dashboardStyles.statIcon}><AssetIcon src={openIssueIcon} /></div>
               <p>Open</p>
               <strong>{loading ? "—" : counts.open}</strong>
             </article>
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.progressCard}`}>
-              <div className={dashboardStyles.statIcon}><IssueStatusIcon status="inProgress" /></div>
+              <div className={dashboardStyles.statIcon}><AssetIcon src={progressIssueIcon} /></div>
               <p>In Progress</p>
               <strong>{loading ? "—" : counts.inProgress}</strong>
             </article>
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.closedCard}`}>
-              <div className={dashboardStyles.statIcon}><IssueStatusIcon status="closed" /></div>
+              <div className={dashboardStyles.statIcon}><AssetIcon src={closedIssueIcon} /></div>
               <p>Closed</p>
               <strong>{loading ? "—" : counts.closed}</strong>
             </article>
@@ -519,6 +529,7 @@ export default function EmployeeIssues() {
                     setStatusError("");
                   }}
                   onEmployeeStatusSave={handleStatusSave}
+                  onAttachmentRemoved={updateIssueAfterAttachmentRemoval}
                 />
               ) : null}
             </div>

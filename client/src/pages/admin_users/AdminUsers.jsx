@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
-import NotificationIcon from "../../components/NotificationIcon";
+import AssetIcon from "../../components/AssetIcon";
+import crownIcon from "../../assets/icons/crown.svg";
+import notificationIcon from "../../assets/icons/notification.svg";
+import trashIcon from "../../assets/icons/trash.svg";
+import userGroupIcon from "../../assets/icons/user-group.svg";
+import UserDropdown from "../userDropdown/userDropdown";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
 import styles from "./admin_users.module.css";
 
@@ -17,45 +22,6 @@ const statusOptions = [
 ];
 const editRoleOptions = roleOptions.slice(1);
 const editStatusOptions = statusOptions.slice(1);
-
-function UserGroupIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="17"
-      height="17"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="9" cy="8" r="3" />
-      <path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19H3.5Z" />
-      <path d="M16 5.3a3 3 0 0 1 0 5.8M16.5 13h.2a4.3 4.3 0 0 1 4.3 4.3V19h-4" />
-    </svg>
-  );
-}
-
-function CrownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="17"
-      height="17"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m3 8 4.5 3.5L12 5l4.5 6.5L21 8l-2 10H5L3 8Z" />
-      <path d="M5 21h14" />
-    </svg>
-  );
-}
 
 const emptyForm = {
   name: "",
@@ -94,7 +60,6 @@ const formatDate = (value) => {
 };
 
 export default function AdminUsers() {
-  const userName = localStorage.getItem("userName") || "Admin";
   const userId = localStorage.getItem("userId");
   const [users, setUsers] = useState([]);
   const [summary, setSummary] = useState({ total: 0, admins: 0, employees: 0 });
@@ -336,7 +301,6 @@ export default function AdminUsers() {
     }
   };
 
-  const initial = userName.trim().charAt(0).toUpperCase() || "A";
 
   return (
     <section className={dashboardStyles.mainContent}>
@@ -351,14 +315,10 @@ export default function AdminUsers() {
           type="button"
           aria-label="Notifications"
         >
-          <NotificationIcon />
+          <AssetIcon src={notificationIcon} />
           <span className={dashboardStyles.notificationDot} />
         </button>
-        <div className={dashboardStyles.userMenu}>
-          <span className={dashboardStyles.avatar}>{initial}</span>
-          <span className={dashboardStyles.userRole}>{userName}</span>
-          <span className={dashboardStyles.chevron}>⌄</span>
-        </div>
+        <UserDropdown />
       </header>
 
       <div className={`${dashboardStyles.dashboardBody} ${styles.usersBody}`}>
@@ -375,19 +335,19 @@ export default function AdminUsers() {
         <section className={styles.statsGrid} aria-label="User summary">
           <article className={styles.statCard}>
             <span className={`${styles.statIcon} ${styles.totalIcon}`}>
-              <UserGroupIcon />
+              <AssetIcon src={userGroupIcon} size={17} />
             </span>
             <div><span>Total Users</span><strong>{summary.total}</strong></div>
           </article>
           <article className={styles.statCard}>
             <span className={`${styles.statIcon} ${styles.adminIcon}`}>
-              <CrownIcon />
+              <AssetIcon src={crownIcon} size={17} />
             </span>
             <div><span>Admins</span><strong>{summary.admins}</strong></div>
           </article>
           <article className={styles.statCard}>
             <span className={`${styles.statIcon} ${styles.employeeIcon}`}>
-              <UserGroupIcon />
+              <AssetIcon src={userGroupIcon} size={17} />
             </span>
             <div><span>Employees</span><strong>{summary.employees}</strong></div>
           </article>
@@ -499,15 +459,7 @@ export default function AdminUsers() {
                           disabled={String(user._id) === String(userId)}
                           onClick={() => setDeleteTarget(user)}
                         >
-                          <svg
-                            aria-hidden="true"
-                            viewBox="0 0 16 16"
-                            width="12"
-                            height="12"
-                            fill="currentColor"
-                          >
-                            <path d="M5 5.5v7.25c0 .69.56 1.25 1.25 1.25h3.5c.69 0 1.25-.56 1.25-1.25V5.5H5Zm1.5 1h1v5h-1v-5Zm2 0h1v5h-1v-5ZM4 3.5h2.25l.5-1h2.5l.5 1H12v1H4v-1Z" />
-                          </svg>
+                          <AssetIcon src={trashIcon} size={12} />
                         </button>
                       </div>
                     </div>

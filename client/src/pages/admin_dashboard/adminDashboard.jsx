@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { axiosRequest } from "../../api/axiosRequest";
-import IssueStatusIcon from "../../components/IssueStatusIcon";
-import IssuesIcon from "../../components/IssuesIcon";
-import NotificationIcon from "../../components/NotificationIcon";
+import AssetIcon from "../../components/AssetIcon";
+import IssueStatCards from "./IssueStatCards";
+import closedIssueIcon from "../../assets/icons/issue-closed.svg";
+import openIssueIcon from "../../assets/icons/issue-open.svg";
+import progressIssueIcon from "../../assets/icons/issue-progress.svg";
+import issuesIcon from "../../assets/icons/issues.svg";
+import notificationIcon from "../../assets/icons/notification.svg";
+import UserDropdown from "../userDropdown/userDropdown";
 import styles from "./admin_dashboard.module.css";
 
 const issueStatuses = [
@@ -77,6 +82,12 @@ export default function AdminDashboard() {
   const counts = summary;
   const displayedIssues = issues;
   const totalIssues = summary.total;
+  const statCards = [
+    { label: "Total Issues", value: totalIssues, icon: issuesIcon, variant: "totalCard" },
+    { label: "Open", value: counts.open, icon: openIssueIcon, variant: "openCard" },
+    { label: "In Progress", value: counts.inProgress, icon: progressIssueIcon, variant: "progressCard" },
+    { label: "Closed", value: counts.closed, icon: closedIssueIcon, variant: "closedCard" },
+  ];
   const percentages = issueStatuses.map(({ key }) =>
     totalIssues ? Math.round((counts[key] / totalIssues) * 100) : 0,
   );
@@ -84,9 +95,6 @@ export default function AdminDashboard() {
     "--open-share": `${percentages[0]}%`,
     "--progress-share": `${percentages[0] + percentages[1]}%`,
   };
-  const role = localStorage.getItem("role") || "admin";
-  const userInitial = role.charAt(0).toUpperCase();
-
   return (
     <section className={styles.mainContent} id="dashboard">
         <header className={styles.topbar}>
@@ -96,14 +104,10 @@ export default function AdminDashboard() {
           </div>
           <div className={styles.topbarSpacer} />
           <button className={styles.notificationButton} type="button" aria-label="Notifications">
-            <NotificationIcon />
+            <AssetIcon src={notificationIcon} />
             <span className={styles.notificationDot} />
           </button>
-          <div className={styles.userMenu}>
-            <span className={styles.avatar}>{userInitial}</span>
-            <span className={styles.userRole}>{role}</span>
-            <span className={styles.chevron}>⌄</span>
-          </div>
+          <UserDropdown />
         </header>
 
         <div className={styles.dashboardBody}>
@@ -131,28 +135,12 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          <section className={styles.statsGrid} aria-label="Issue summary">
-            <article className={`${styles.statCard} ${styles.totalCard}`}>
-              <div className={styles.statIcon}><IssuesIcon /></div>
-              <p>Total Issues</p>
-              <strong>{loading ? "—" : totalIssues}</strong>
-            </article>
-            <article className={`${styles.statCard} ${styles.openCard}`}>
-              <div className={styles.statIcon}><IssueStatusIcon status="open" /></div>
-              <p>Open</p>
-              <strong>{loading ? "—" : counts.open}</strong>
-            </article>
-            <article className={`${styles.statCard} ${styles.progressCard}`}>
-              <div className={styles.statIcon}><IssueStatusIcon status="inProgress" /></div>
-              <p>In Progress</p>
-              <strong>{loading ? "—" : counts.inProgress}</strong>
-            </article>
-            <article className={`${styles.statCard} ${styles.closedCard}`}>
-              <div className={styles.statIcon}><IssueStatusIcon status="closed" /></div>
-              <p>Closed</p>
-              <strong>{loading ? "—" : counts.closed}</strong>
-            </article>
-          </section>
+          <IssueStatCards
+            items={statCards}
+            loading={loading}
+            styles={styles}
+            label="Issue summary"
+          />
 
           <section className={styles.detailGrid}>
             <article className={styles.panel} id="status-breakdown">

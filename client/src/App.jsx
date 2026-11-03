@@ -1,3 +1,4 @@
+import { createContext, useContext, useState } from "react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import AdminDashboard from "./pages/admin_dashboard/adminDashboard.jsx";
 import AdminIssues from "./pages/admin_issue/AdminIssues.jsx";
@@ -27,12 +28,21 @@ const GlobalLoader = () => {
   );
 };
 
-const DashboardLayout = () => (
-  <main className={dashboardStyles.appShell}>
-    <Sidebar />
-    <Outlet />
-  </main>
-);
+const ThemeContext = createContext(null);
+
+const DashboardLayout = () => {
+  const { theme, setTheme } = useContext(ThemeContext);
+  return (
+    <main
+      className={dashboardStyles.appShell}
+      data-app-shell
+      data-theme={theme}
+    >
+      <Sidebar theme={theme} setTheme={setTheme} />
+      <Outlet context={{ theme, setTheme }} />
+    </main>
+  );
+};
 
 const router = createBrowserRouter([
   { path: "/", element: <Login /> },
@@ -44,6 +54,7 @@ const router = createBrowserRouter([
       { path: "/admin/dashboard", element: <AdminDashboard /> },
       { path: "/admin/issues", element: <AdminIssues /> },
       { path: "/admin/users", element: <AdminUsers /> },
+      { path: "/admin/profile", element: <EmployeeProfile /> },
       { path: "/employee/dashboard", element: <EmployeeDashboard /> },
       { path: "/employee/issues", element: <EmployeeIssues /> },
       { path: "/employee/profile", element: <EmployeeProfile /> },
@@ -52,9 +63,18 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
+  const [theme, setThemeState] = useState(
+    () => localStorage.getItem("theme") || "light",
+  );
+  const setTheme = (nextTheme) => {
+    localStorage.setItem("theme", nextTheme);
+    setThemeState(nextTheme);
+  };
   return (
     <>
-      <RouterProvider router={router} />
+      <ThemeContext.Provider value={{ theme, setTheme }}>
+        <RouterProvider router={router} />
+      </ThemeContext.Provider>
       <GlobalLoader />
       <ToastContainer
         position="top-center"

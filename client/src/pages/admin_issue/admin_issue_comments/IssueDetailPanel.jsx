@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import { axiosRequest } from "../../../api/axiosRequest";
+import AssetIcon from "../../../components/AssetIcon";
+import trashIcon from "../../../assets/icons/trash.svg";
 import styles from "./issue_detail_panel.module.css";
 
 const statusOptions = [
@@ -81,6 +83,7 @@ export default function IssueDetailPanel({
   onDelete,
   onDuplicate,
   onAdminUpdate,
+  onAttachmentRemoved,
   onEmployeeStatusSave,
   saving = false,
   error = "",
@@ -99,7 +102,19 @@ export default function IssueDetailPanel({
   const [commentsError, setCommentsError] = useState("");
   const [commentText, setCommentText] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
+  const [removingAttachment, setRemovingAttachment] = useState(false);
+  const [attachmentError, setAttachmentError] = useState("");
   const issueId = issue?._id || issue?.id;
+
+  useEffect(() => {
+    if (!imagePreviewOpen) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setImagePreviewOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [imagePreviewOpen]);
 
   useEffect(() => {
     if (!issueId) return undefined;
@@ -157,6 +172,29 @@ export default function IssueDetailPanel({
     setMenuOpen(false);
     setMenuSubsection("");
     onAdminUpdate?.(patch);
+  };
+
+  const removeAttachment = async () => {
+    if (!issueId || removingAttachment) return;
+    if (!window.confirm("Delete this image attachment from the issue?")) return;
+    setRemovingAttachment(true);
+    setAttachmentError("");
+    try {
+      const response = await axiosRequest(
+        `/issues/${encodeURIComponent(issueId)}/attachment`,
+        null,
+        "DELETE",
+      );
+      onAttachmentRemoved?.(response.data);
+      setImagePreviewOpen(false);
+    } catch (requestError) {
+      setAttachmentError(
+        requestError.response?.data?.message ||
+          "Could not remove the attachment. Please try again.",
+      );
+    } finally {
+      setRemovingAttachment(false);
+    }
   };
 
   return (
@@ -340,19 +378,66 @@ export default function IssueDetailPanel({
         </p>
         <h3>Attachments ({issue.issue_image ? 1 : 0})</h3>
         {issue.issue_image ? (
-          <a
-            className={styles.attachment}
-            href={issue.issue_image}
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img src={issue.issue_image} alt="Issue attachment" />
+          <div className={styles.attachment}>
+            <div className={styles.attachmentPreview}>
+              <button
+                className={styles.attachmentImageButton}
+                type="button"
+                onClick={() => setImagePreviewOpen(true)}
+                aria-label="Preview issue attachment"
+              >
+                <img src={issue.issue_image} alt="Issue attachment" />
+              </button>
+              <button
+                className={styles.deleteAttachmentIcon}
+                type="button"
+                disabled={removingAttachment}
+                onClick={removeAttachment}
+                aria-label="Delete issue attachment"
+                title="Delete image"
+              >
+                <AssetIcon src={trashIcon} size={14} />
+              </button>
+            </div>
             <span>View attachment</span>
-          </a>
+            {attachmentError && (
+              <p className={styles.attachmentError} role="alert">
+                {attachmentError}
+              </p>
+            )}
+          </div>
         ) : (
           <p className={styles.muted}>No attachments for this issue.</p>
         )}
       </div>
+
+      {imagePreviewOpen && issue.issue_image && (
+        <div
+          className={styles.imagePreviewBackdrop}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setImagePreviewOpen(false);
+            }
+          }}
+        >
+          <section
+            className={styles.imagePreviewDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Issue attachment preview"
+          >
+            <button
+              className={styles.imagePreviewClose}
+              type="button"
+              onClick={() => setImagePreviewOpen(false)}
+              aria-label="Close image preview"
+            >
+              ×
+            </button>
+            <img src={issue.issue_image} alt="Issue attachment preview" />
+          </section>
+        </div>
+      )}
 
       <nav className={styles.detailTabs} aria-label="Issue information">
         <button

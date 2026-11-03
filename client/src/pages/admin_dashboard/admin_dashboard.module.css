@@ -8,9 +8,8 @@
   --status-progress: #1687f8;
   --status-closed: #2eae69;
   display: flex;
-  min-height: 100vh;
-  background: #f7f8fc;
-  color: #20233a;
+  background: var(--theme-background, #f7f8fc);
+  color: var(--theme-app-text, #20233a);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -117,7 +116,10 @@
   width: auto;
   max-width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
   margin-left: 246px;
+  overflow: hidden;
 }
 
 .topbar {
@@ -126,8 +128,8 @@
   align-items: center;
   gap: 20px;
   padding: 0 38px;
-  border-bottom: 1px solid #ececf4;
-  background: rgb(255 255 255 / 84%);
+  border-bottom: 1px solid var(--theme-header-border, #ececf4);
+  background: var(--theme-surface-raised, rgb(255 255 255 / 84%));
 }
 
 .mobileBrand {
@@ -191,8 +193,12 @@
 }
 
 .dashboardBody {
+  flex: 1 1 0;
   width: min(1120px, 100%);
+  min-height: 0;
   margin: 0 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 31px 38px 20px;
 }
 
@@ -205,7 +211,7 @@
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #77768c;
+  color: var(--theme-text-secondary, #77768c);
   font-size: 9px;
   font-weight: 750;
   letter-spacing: 0.11em;
@@ -213,7 +219,7 @@
 
 .pageHeading h1 {
   margin: 0;
-  color: #22243a;
+  color: var(--theme-text, #22243a);
   font-size: clamp(24px, 2.4vw, 29px);
   font-weight: 750;
   letter-spacing: -0.045em;
@@ -221,16 +227,16 @@
 
 .pageSubtitle {
   margin: 5px 0 0;
-  color: #828397;
+  color: var(--theme-text-secondary, #828397);
   font-size: 12px;
 }
 
 .todayLabel {
   padding: 8px 11px;
-  border: 1px solid #e8e8f0;
+  border: 1px solid var(--theme-border, #e8e8f0);
   border-radius: 9px;
-  background: #fff;
-  color: #77768a;
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text-secondary, #77768a);
   font-size: 10px;
   font-weight: 600;
 }
@@ -267,9 +273,9 @@
 
 .statCard,
 .panel {
-  border: 1px solid #e9e9f1;
+  border: 1px solid var(--theme-border, #e9e9f1);
   border-radius: 13px;
-  background: #fff;
+  background: var(--theme-surface, #fff);
   box-shadow: 0 5px 16px rgb(39 37 72 / 3%);
 }
 
@@ -294,13 +300,13 @@
 
 .statCard p {
   margin: 0 0 2px;
-  color: #76768b;
+  color: var(--theme-text-secondary, #76768b);
   font-size: 10px;
   font-weight: 550;
 }
 
 .statCard strong {
-  color: #2a2440;
+  color: var(--theme-text, #2a2440);
   font-size: 23px;
   font-weight: 750;
   letter-spacing: -0.04em;
@@ -342,7 +348,7 @@
 
 .panelHeading h2 {
   margin: 0;
-  color: #26263b;
+  color: var(--theme-text, #26263b);
   font-size: 13px;
   font-weight: 730;
   letter-spacing: -0.02em;
@@ -350,7 +356,7 @@
 
 .panelHeading p {
   margin: 4px 0 0;
-  color: #9696a6;
+  color: var(--theme-text-secondary, #9696a6);
   font-size: 10px;
 }
 
@@ -488,11 +494,11 @@
   min-height: 35px;
   align-items: center;
   gap: 10px;
-  border-top: 1px solid #f0f0f5;
+  border-top: 1px solid var(--theme-border-subtle, #f0f0f5);
 }
 
 .issueId {
-  color: #67667a;
+  color: var(--theme-text-secondary, #67667a);
   font-size: 9px;
   font-weight: 700;
   white-space: nowrap;
@@ -500,7 +506,7 @@
 
 .issueTitle {
   overflow: hidden;
-  color: #45445a;
+  color: var(--theme-text, #45445a);
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -534,7 +540,7 @@
   min-height: 125px;
   place-items: center;
   margin: 0;
-  color: #89899b;
+  color: var(--theme-text-secondary, #89899b);
   font-size: 11px;
   text-align: center;
 }

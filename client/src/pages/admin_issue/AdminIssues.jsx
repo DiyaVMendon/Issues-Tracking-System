@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
-import NotificationIcon from "../../components/NotificationIcon";
+import AssetIcon from "../../components/AssetIcon";
+import notificationIcon from "../../assets/icons/notification.svg";
+import UserDropdown from "../userDropdown/userDropdown";
 import IssueDetailPanel from "./admin_issue_comments/IssueDetailPanel";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
 import styles from "./admin_issues.module.css";
@@ -114,8 +116,6 @@ const getIssueCode = (issue) => {
 const getInitial = (name = "") => name.trim().charAt(0).toUpperCase() || "?";
 
 export default function AdminIssues() {
-  const role = localStorage.getItem("role") || "Admin";
-  const userName = localStorage.getItem("userName") || role;
   const [issues, setIssues] = useState([]);
   const [summary, setSummary] = useState({
     total: 0,
@@ -298,7 +298,6 @@ export default function AdminIssues() {
 
   const visibleIssues = issues;
 
-  const userInitial = getInitial(userName);
 
   const openCreateForm = () => {
     setEditingIssue(null);
@@ -483,6 +482,17 @@ export default function AdminIssues() {
     }
   };
 
+  const updateIssueAfterAttachmentRemoval = (updatedIssue) => {
+    const id = String(issueKey(updatedIssue));
+    setIssues((current) =>
+      current.map((issue) =>
+        String(issueKey(issue)) === id ? updatedIssue : issue,
+      ),
+    );
+    setViewingIssue(updatedIssue);
+    setRefreshKey((current) => current + 1);
+  };
+
   const duplicateSelectedIssue = async () => {
     if (!viewingIssue) return;
     const assignedTo =
@@ -544,14 +554,10 @@ export default function AdminIssues() {
           type="button"
           aria-label="Notifications"
         >
-          <NotificationIcon />
+          <AssetIcon src={notificationIcon} />
           <span className={dashboardStyles.notificationDot} />
         </button>
-        <div className={dashboardStyles.userMenu}>
-          <span className={dashboardStyles.avatar}>{userInitial}</span>
-          <span className={dashboardStyles.userRole}>{userName}</span>
-          <span className={dashboardStyles.chevron}>⌄</span>
-        </div>
+        <UserDropdown />
       </header>
 
       <div className={`${dashboardStyles.dashboardBody} ${styles.issuesBody}`}>
@@ -769,6 +775,7 @@ export default function AdminIssues() {
                 }}
                 onDuplicate={duplicateSelectedIssue}
                 onAdminUpdate={updateSelectedIssue}
+                onAttachmentRemoved={updateIssueAfterAttachmentRemoval}
               />
             ) : null}
           </div>
@@ -815,7 +822,7 @@ export default function AdminIssues() {
                 </button>
               </div>
 
-              <form className={styles.issueForm} onSubmit={handleSave}>
+              <form className={`${styles.issueForm} issue-form`} onSubmit={handleSave}>
                 <label className={styles.formField}>
                   <span>Issue Title <b>*</b></span>
                   <input

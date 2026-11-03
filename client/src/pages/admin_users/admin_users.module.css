@@ -697,3 +697,33 @@
     gap: 4px;
   }
 }
+
+.statCard,
+.usersPanel,
+.userModal,
+.confirmModal {
+  border-color: var(--theme-border, #e8e8f0);
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, #29283f);
+  box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
+}
+
+.pageHeading h1,
+.statCard > div strong,
+.nameCell strong {
+  color: var(--theme-text, #eeedf4);
+}
+
+.pageHeading p,
+.statCard > div span,
+.emailCell {
+  color: var(--theme-text-secondary, #aaa9b8);
+}
+
+.usersTableHeader,
+.userRow,
+.searchBox {
+  border-color: var(--theme-border-subtle, #30313b);
+  background: var(--theme-surface, #17181f);
+  color: var(--theme-text, #e8e7ee);
+}

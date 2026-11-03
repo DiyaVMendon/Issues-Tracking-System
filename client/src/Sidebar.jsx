@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ThemeDialog } from "./pages/userDropdown/userDropdown";
 import {
   NOT_AUTHENTICATED,
 } from "./actions/controlActionTypes";
@@ -15,12 +17,14 @@ const adminLinks = [
   { label: "Dashboard", icon: "▦", to: "/admin/dashboard", key: "dashboard" },
   { label: "All Issues", icon: "▤", to: "/admin/issues", key: "issues" },
   { label: "Users", icon: "♙", to: "/admin/users", key: "users" },
+  { label: "Profile", icon: "♙", to: "/admin/profile", key: "profile" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ theme, setTheme }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pathname, hash } = useLocation();
+  const [themeDialogOpen, setThemeDialogOpen] = useState(false);
   const role = localStorage.getItem("role")?.toLowerCase() || "employee";
   const isAdmin = role === "admin";
   const links = isAdmin ? adminLinks : employeeLinks;
@@ -89,16 +93,27 @@ export default function Sidebar() {
 
       <div className={styles.sidebarBottom}>
         {isAdmin && (
-          <a className={styles.navLink} href="#dashboard">
+          <button
+            className={styles.navLink}
+            type="button"
+            onClick={() => setThemeDialogOpen(true)}
+          >
             <span className={styles.navIcon}>⚙</span>
             Settings
-          </a>
+          </button>
         )}
         <button className={styles.navLink} type="button" onClick={handleLogout}>
           <span className={styles.navIcon}>↪</span>
           Logout
         </button>
       </div>
+      {themeDialogOpen && (
+        <ThemeDialog
+          theme={theme}
+          setTheme={setTheme}
+          onClose={() => setThemeDialogOpen(false)}
+        />
+      )}
     </aside>
   );
 }

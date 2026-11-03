@@ -1,5 +1,5 @@
 .mainContent {
-  min-height: 100vh;
+  min-height: 0;
 }
 
 .profileBody {
@@ -448,4 +448,38 @@
   .formActions {
     flex-wrap: wrap;
   }
+}
+
+.summaryCard,
+.detailsCard {
+  border-color: var(--theme-border, #e8e8f0);
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, #eeedf4);
+  box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
+}
+
+.pageHeading h1,
+.summaryCard h2,
+.sectionHeading h2 {
+  color: var(--theme-text, #eeedf4);
+}
+
+.pageHeading p,
+.designationSummary,
+.summaryDetail,
+.field > span,
+.sectionHeading p {
+  color: var(--theme-text-secondary, #aaa9b8);
+}
+
+.tabs {
+  border-color: var(--theme-border-subtle, #30313b);
+}
+
+.tab {
+  color: var(--theme-text-secondary, #b6b4c2);
+}
+
+.activeTab {
+  color: var(--theme-hover-text, #c5b4ff);
 }

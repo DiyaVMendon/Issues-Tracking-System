@@ -6,6 +6,7 @@ import {
   getIssueById,
   getIssueComments,
   addIssueComment,
+  deleteIssueAttachment,
   updateIssue,
 } from "../controllers/IssueController.js";
 import uploads from "../middleware/upload.js";
@@ -17,6 +18,7 @@ route.post("/create-issue", uploads.single("issue_image"), createIssue);
 route.get("/", verifyToken, getIssues);
 route.get("/:id/comments", verifyToken, getIssueComments);
 route.post("/:id/comments", verifyToken, addIssueComment);
+route.delete("/:id/attachment", verifyToken, deleteIssueAttachment);
 route.get("/get-issue/:id", getIssueById);
 route.put("/update-issue/:id", updateIssue);
 route.delete("/delete-issue/:id", deleteIssue);

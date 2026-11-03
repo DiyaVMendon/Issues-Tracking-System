@@ -623,3 +623,34 @@
     padding: 17px;
   }
 }
+
+.issuesPanel,
+.issueListColumn,
+.issueModal {
+  border-color: var(--theme-border, #e8e8f0);
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, #eeedf4);
+  box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
+}
+
+.pageHeading h1,
+.issueListTitle {
+  color: var(--theme-text, #eeedf4);
+}
+
+.issueListDescription,
+.issueListMeta {
+  color: var(--theme-text-secondary, #aaa9b8);
+}
+
+.issueListItem,
+.searchBox {
+  border-color: var(--theme-border-subtle, #30313b);
+  background: var(--theme-surface, #17181f);
+  color: var(--theme-text, #e8e7ee);
+}
+
+.selectedIssue {
+  border-color: var(--theme-selected-border, #7855cf);
+  background: var(--theme-selected, #242033);
+}

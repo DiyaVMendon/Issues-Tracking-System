@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosRequest } from "../../api/axiosRequest";
-import AssignedIssuesIcon from "../../components/AssignedIssuesIcon";
-import IssueStatusIcon from "../../components/IssueStatusIcon";
-import NotificationIcon from "../../components/NotificationIcon";
+import AssetIcon from "../../components/AssetIcon";
+import IssueStatCards from "../admin_dashboard/IssueStatCards";
+import assignedIssuesIcon from "../../assets/icons/assigned-issues.svg";
+import closedIssueIcon from "../../assets/icons/issue-closed.svg";
+import openIssueIcon from "../../assets/icons/issue-open.svg";
+import progressIssueIcon from "../../assets/icons/issue-progress.svg";
+import notificationIcon from "../../assets/icons/notification.svg";
+import UserDropdown from "../userDropdown/userDropdown";
 import styles from "../admin_dashboard/admin_dashboard.module.css";
 
 const issueStatuses = [
@@ -33,7 +38,6 @@ const getIssueId = (issue) => {
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
   const [issues, setIssues] = useState([]);
   const [summary, setSummary] = useState({
     total: 0,
@@ -45,7 +49,7 @@ export default function EmployeeDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!localStorage.getItem("accessToken") || !userId) {
+    if (!localStorage.getItem("accessToken")) {
       navigate("/login", { replace: true });
       return undefined;
     }
@@ -80,10 +84,16 @@ export default function EmployeeDashboard() {
     return () => {
       active = false;
     };
-  }, [navigate, userId]);
+  }, [navigate]);
 
   const counts = summary;
   const displayedIssues = issues;
+  const statCards = [
+    { label: "Assigned Issues", value: summary.total, icon: assignedIssuesIcon, variant: "totalCard" },
+    { label: "Open", value: counts.open, icon: openIssueIcon, variant: "openCard" },
+    { label: "In Progress", value: counts.inProgress, icon: progressIssueIcon, variant: "progressCard" },
+    { label: "Closed", value: counts.closed, icon: closedIssueIcon, variant: "closedCard" },
+  ];
   const percentages = issueStatuses.map(({ key }) =>
     summary.total ? Math.round((counts[key] / summary.total) * 100) : 0,
   );
@@ -92,7 +102,6 @@ export default function EmployeeDashboard() {
     "--progress-share": `${percentages[0] + percentages[1]}%`,
   };
   const userName = localStorage.getItem("userName") || "there";
-  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <section className={styles.mainContent} id="employee-dashboard">
@@ -107,14 +116,10 @@ export default function EmployeeDashboard() {
             type="button"
             aria-label="Notifications"
           >
-            <NotificationIcon />
+            <AssetIcon src={notificationIcon} />
             <span className={styles.notificationDot} />
           </button>
-          <div className={styles.userMenu}>
-            <span className={styles.avatar}>{userInitial}</span>
-            <span className={styles.userRole}>{userName}</span>
-            <span className={styles.chevron}>⌄</span>
-          </div>
+          <UserDropdown />
         </header>
 
         <div className={styles.dashboardBody}>
@@ -144,28 +149,12 @@ export default function EmployeeDashboard() {
             </div>
           )}
 
-          <section className={styles.statsGrid} aria-label="Your issue summary">
-            <article className={`${styles.statCard} ${styles.totalCard}`}>
-              <div className={styles.statIcon}><AssignedIssuesIcon /></div>
-              <p>Assigned Issues</p>
-              <strong>{loading ? "—" : summary.total}</strong>
-            </article>
-            <article className={`${styles.statCard} ${styles.openCard}`}>
-              <div className={styles.statIcon}><IssueStatusIcon status="open" /></div>
-              <p>Open</p>
-              <strong>{loading ? "—" : counts.open}</strong>
-            </article>
-            <article className={`${styles.statCard} ${styles.progressCard}`}>
-              <div className={styles.statIcon}><IssueStatusIcon status="inProgress" /></div>
-              <p>In Progress</p>
-              <strong>{loading ? "—" : counts.inProgress}</strong>
-            </article>
-            <article className={`${styles.statCard} ${styles.closedCard}`}>
-              <div className={styles.statIcon}><IssueStatusIcon status="closed" /></div>
-              <p>Closed</p>
-              <strong>{loading ? "—" : counts.closed}</strong>
-            </article>
-          </section>
+          <IssueStatCards
+            items={statCards}
+            loading={loading}
+            styles={styles}
+            label="Your issue summary"
+          />
 
           <section className={styles.detailGrid}>
             <article className={styles.panel}>

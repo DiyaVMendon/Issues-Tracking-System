@@ -119,20 +119,6 @@
   width: 100%;
 }
 
-.toolbar :global(.admin-select__control) {
-  min-height: 40px;
-}
-
-.toolbar :global(.admin-select__value-container) {
-  overflow: hidden;
-}
-
-.toolbar :global(.admin-select__single-value) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sortSelect {
   grid-column: 5;
 }
@@ -597,14 +583,6 @@
   gap: 10px 12px;
 }
 
-.formGrid :global(.admin-select__control) {
-  min-height: 34px;
-}
-
-.formGrid :global(.admin-select__menu-portal) {
-  z-index: 30;
-}
-
 .uploadBox {
   position: relative;
   display: flex;
@@ -800,4 +778,39 @@
   .formGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.issuesPanel,
+.issueListColumn,
+.issueModal,
+.confirmModal {
+  border-color: var(--theme-border, #e8e8f0);
+  background: var(--theme-surface, #fff);
+  color: var(--theme-text, #eeedf4);
+  box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
+}
+
+.headingRow h1,
+.issueListTitle,
+.modalHeading {
+  color: var(--theme-text, #eeedf4);
+}
+
+.headingRow p,
+.issueListDescription,
+.issueListMeta {
+  color: var(--theme-text-secondary, #aaa9b8);
+}
+
+.issueListItem,
+.issueListSelect,
+.searchBox {
+  border-color: var(--theme-border-subtle, #30313b);
+  background: var(--theme-surface, #17181f);
+  color: var(--theme-text, #e8e7ee);
+}
+
+.selectedIssue {
+  border-color: var(--theme-selected-border, #7855cf);
+  background: var(--theme-selected, #242033);
 }

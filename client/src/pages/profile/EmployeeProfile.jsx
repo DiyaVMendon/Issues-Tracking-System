@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { axiosRequest } from "../../api/axiosRequest";
+import UserDropdown from "../userDropdown/userDropdown";
 import {
   AUTHENTICATED,
   SET_ACCESSTOKEN,
@@ -53,11 +54,15 @@ function EmployeeProfile({
   set_accessToken,
 }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const profile = loggedInUser || emptyProfile;
   const [form, setForm] = useState({ name: "", phone: "", designation: "" });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
-  const [activeTab, setActiveTab] = useState("personal");
+  const requestedTab = searchParams.get("tab");
+  const activeTab = tabs.some((tab) => tab.id === requestedTab)
+    ? requestedTab
+    : "personal";
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -207,7 +212,9 @@ function EmployeeProfile({
 
   const displayName = profile.name || localStorage.getItem("userName") || "Employee";
   const roleLabel =
-    profile.role?.toLowerCase() === "admin" ? "Admin" : "Employee";
+    (profile.role || localStorage.getItem("role"))?.toLowerCase() === "admin"
+      ? "Admin"
+      : "Employee";
   const avatarSource = avatarPreview || profile.avatar;
 
   return (
@@ -218,11 +225,7 @@ function EmployeeProfile({
           IssueTracker
         </div>
         <div className={dashboardStyles.topbarSpacer} />
-        <div className={dashboardStyles.userMenu}>
-          <span className={dashboardStyles.avatar}>{getInitials(displayName)}</span>
-          <span className={dashboardStyles.userRole}>{displayName}</span>
-          <span className={dashboardStyles.chevron}>⌄</span>
-        </div>
+        <UserDropdown />
       </header>
 
       <div className={`${dashboardStyles.dashboardBody} ${styles.profileBody}`}>
@@ -267,7 +270,7 @@ function EmployeeProfile({
             </div>
             <h2>{loading ? "Loading profile…" : displayName}</h2>
             <p className={styles.designationSummary}>
-              {profile.designation || "Employee"}
+              {profile.designation || roleLabel}
             </p>
             <span className={styles.roleBadge}>{roleLabel}</span>
             <div className={styles.summaryDivider} />
@@ -295,7 +298,10 @@ function EmployeeProfile({
                   role="tab"
                   aria-selected={activeTab === tab.id}
                   onClick={() => {
-                    setActiveTab(tab.id);
+                    setSearchParams(
+                      tab.id === "personal" ? {} : { tab: tab.id },
+                      { replace: true },
+                    );
                     setError("");
                     setNotice("");
                   }}

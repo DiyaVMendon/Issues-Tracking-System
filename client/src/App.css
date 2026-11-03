@@ -26,6 +26,88 @@
   font-weight: 650;
 }
 
+[data-app-shell] {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  --theme-background: #f7f8fc;
+  --theme-app-text: #20233a;
+  --theme-header-border: #ececf4;
+  --theme-surface: #fff;
+  --theme-surface-raised: #fff;
+  --theme-surface-input: #fff;
+  --theme-surface-inset: #fff;
+  --theme-border: #e8e8f0;
+  --theme-border-subtle: #efeff3;
+  --theme-border-strong: #dedeea;
+  --theme-text: #29283f;
+  --theme-text-secondary: #77768c;
+  --theme-text-tertiary: #555466;
+  --theme-hover: #f5f2fc;
+  --theme-hover-text: #7048d5;
+  --theme-selected: #f7f3ff;
+  --theme-selected-border: #7048d5;
+}
+
+[data-app-shell] > section {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+[data-app-shell][data-theme="dark"] {
+  --theme-background: #0e0f13;
+  --theme-app-text: #eeedf4;
+  --theme-header-border: #282932;
+  --theme-surface: #17181f;
+  --theme-surface-raised: #111217;
+  --theme-surface-input: #191a21;
+  --theme-surface-inset: #1d1e26;
+  --theme-border: #292a33;
+  --theme-border-subtle: #30313b;
+  --theme-border-strong: #383945;
+  --theme-text: #eeedf4;
+  --theme-text-secondary: #aaa9b8;
+  --theme-text-tertiary: #d3d1dc;
+  --theme-hover: #25222f;
+  --theme-hover-text: #c5b4ff;
+  --theme-selected: #29213d;
+  --theme-selected-border: #9c7af0;
+  color-scheme: dark;
+}
+
+[data-app-shell][data-theme="dark"] input,
+[data-app-shell][data-theme="dark"] textarea {
+  border-color: var(--theme-border-strong);
+  background-color: var(--theme-surface-input);
+  color: var(--theme-text);
+}
+
+.admin-select__control {
+  min-height: 40px;
+}
+
+.issue-form .admin-select__control {
+  min-height: 34px;
+}
+
+.admin-select__value-container {
+  overflow: hidden;
+}
+
+.admin-select__single-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-select__menu-portal {
+  z-index: 30;
+}
+
 @keyframes globalLoaderSpin {
   to {
     transform: rotate(360deg);
