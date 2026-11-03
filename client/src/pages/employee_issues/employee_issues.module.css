@@ -1,0 +1,705 @@
+.issuesBody {
+  padding-top: 21px;
+}
+
+.pageHeading {
+  margin-bottom: 18px;
+}
+
+.pageHeading h1 {
+  margin: 0;
+  color: #22243a;
+  font-size: clamp(24px, 2.4vw, 29px);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+
+.issueStats {
+  gap: 13px;
+  margin-bottom: 13px;
+}
+
+.issueStats article {
+  min-height: 83px;
+  display: grid;
+  grid-template-columns: 39px minmax(0, 1fr);
+  grid-template-rows: 1fr 1fr;
+  align-content: center;
+  align-items: center;
+  column-gap: 12px;
+  padding: 12px 15px;
+}
+
+.issueStats article > div {
+  grid-row: 1 / span 2;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  border-radius: 50%;
+  font-size: 19px;
+}
+
+.issueStats article p {
+  align-self: end;
+  margin-bottom: 1px;
+  color: #343148;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.issueStats article strong {
+  align-self: start;
+  color: #32174f;
+  font-size: 23px;
+}
+
+.issuesPanel {
+  overflow: hidden;
+  padding: 0 13px 10px;
+  border: 1px solid #e8e8f0;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
+}
+
+.statusTabs {
+  display: flex;
+  min-height: 45px;
+  align-items: stretch;
+  gap: 12px;
+  border-bottom: 1px solid #ededf3;
+}
+
+.statusTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 0;
+  background: transparent;
+  color: #5b5b73;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statusTab:hover {
+  color: #7048d5;
+}
+
+.activeTab {
+  color: #7048d5;
+}
+
+.activeTab::after {
+  position: absolute;
+  right: 7px;
+  bottom: -1px;
+  left: 7px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: #7048d5;
+  content: "";
+}
+
+.tabIcon {
+  font-size: 13px;
+}
+
+.tabCircle {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.tableToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 0 11px;
+}
+
+.searchBox {
+  display: flex;
+  width: min(390px, 48%);
+  height: 36px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px;
+  border: 1px solid #dedeea;
+  border-radius: 8px;
+  background: #fff;
+  color: #5c5b73;
+}
+
+.searchBox:focus-within {
+  border-color: #8c69e2;
+  box-shadow: 0 0 0 3px rgb(112 72 213 / 10%);
+}
+
+.searchIcon {
+  font-size: 21px;
+  line-height: 1;
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #29283f;
+  font: inherit;
+  font-size: 11px;
+}
+
+.searchBox input::placeholder {
+  color: #85849a;
+}
+
+.selectGroup {
+  display: flex;
+  gap: 9px;
+}
+
+.toolbarSelect {
+  width: 155px;
+  min-width: 140px;
+}
+
+.modalStatusSelect {
+  width: 100%;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  border: 1px solid #eeeeF4;
+  border-radius: 8px;
+}
+
+.issueTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.issueTable thead {
+  background: #f5f4fb;
+}
+
+.issueTable th {
+  height: 35px;
+  padding: 0 10px;
+  color: #29283f;
+  font-size: 10px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.issueTable td {
+  height: 48px;
+  padding: 6px 10px;
+  border-top: 1px solid #efeff5;
+  color: #36354b;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.issueTable tbody tr:hover {
+  background: #fcfbff;
+}
+
+.issueId {
+  color: #29283f !important;
+  font-size: 10px !important;
+  font-weight: 750;
+}
+
+.titleCell {
+  display: flex;
+  min-width: 160px;
+  max-width: 275px;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.titleCell strong {
+  overflow: hidden;
+  color: #2e2c43;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
+.titleCell span {
+  overflow: hidden;
+  color: #77768b;
+  font-size: 9px;
+  text-overflow: ellipsis;
+}
+
+.priorityBadge,
+.statusBadge {
+  display: inline-flex;
+  min-height: 21px;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.priorityBadge span {
+  font-size: 11px;
+}
+
+.high {
+  background: #ffe4e4;
+  color: #dc3535;
+}
+
+.medium {
+  background: #fff1d5;
+  color: #bd670c;
+}
+
+.low {
+  background: #e0f6e5;
+  color: #23833e;
+}
+
+.other {
+  background: #efeff4;
+  color: #67667a;
+}
+
+.statusBadge {
+  padding-right: 9px;
+  padding-left: 9px;
+}
+
+.open {
+  background: #fff0d3;
+  color: #b96a08;
+}
+
+.inProgress {
+  background: #dceaff;
+  color: #236bc2;
+}
+
+.closed {
+  background: #dcf4df;
+  color: #18753a;
+}
+
+.viewButton {
+  display: grid;
+  width: 28px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid #e5e4ef;
+  border-radius: 7px;
+  background: #fff;
+  color: #514a80;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.viewButton:hover {
+  border-color: #9e86e3;
+  background: #f7f3ff;
+  color: #7048d5;
+}
+
+.tableMessage {
+  height: 100px !important;
+  color: #85849a !important;
+  text-align: center;
+}
+
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 3px 0;
+  color: #89889b;
+  font-size: 9px;
+}
+
+.issueWorkspace {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.9fr) minmax(0, 1.35fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.issueListColumn {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #efedf5;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.listHeading {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  border-bottom: 1px solid #efedf5;
+  color: #77768c;
+  font-size: 9px;
+}
+
+.listHeading strong {
+  color: #39374f;
+  font-size: 10px;
+}
+
+.issueList {
+  display: grid;
+  gap: 6px;
+  padding: 7px;
+}
+
+.issueListItem {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.issueListItem:hover,
+.selectedIssue {
+  border-color: #d7c9f5;
+  background: #f7f3ff;
+}
+
+.issueListTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.issueListTop > strong {
+  color: #4c3584;
+  font-size: 8px;
+}
+
+.issueListTitle {
+  overflow: hidden;
+  color: #28263e;
+  font-size: 10px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issueListDescription {
+  overflow: hidden;
+  color: #77768b;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issueListMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #5b5870;
+  font-size: 8px;
+}
+
+.emptyDetail {
+  display: grid;
+  min-height: 310px;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed #ded9eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #77768c;
+  text-align: center;
+}
+
+.emptyDetail > span {
+  color: #7048d5;
+  font-size: 26px;
+}
+
+.emptyDetail strong {
+  color: #39374f;
+  font-size: 12px;
+}
+
+.emptyDetail p {
+  max-width: 240px;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 520px) {
+  .tableFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(25 19 47 / 50%);
+}
+
+.issueModal {
+  width: min(480px, 100%);
+  padding: 23px;
+  border: 1px solid #e8e6f0;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(22 16 44 / 25%);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.modalHeader h2 {
+  margin: 4px 0 0;
+  color: #26243b;
+  font-size: 19px;
+  line-height: 1.35;
+}
+
+.closeButton {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: #f4f2f8;
+  color: #5d5a70;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.modalDescription {
+  margin: 17px 0;
+  color: #68677b;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.modalMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.modalMeta span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px;
+  border: 1px solid #efedf4;
+  border-radius: 8px;
+  color: #858398;
+  font-size: 10px;
+}
+
+.modalMeta strong {
+  color: #37354b;
+  font-size: 11px;
+}
+
+.statusEditLabel {
+  display: block;
+  margin-bottom: 7px;
+  color: #45435a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.issueModal select {
+  width: 100%;
+}
+
+.modalError {
+  margin: 10px 0 0;
+  color: #b5303c;
+  font-size: 11px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 21px;
+}
+
+.modalActions button {
+  min-height: 35px;
+  padding: 0 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cancelButton {
+  border: 1px solid #e1dfeb;
+  background: #fff;
+  color: #5c5a70;
+}
+
+.saveButton {
+  border: 1px solid #7048d5;
+  background: #7048d5;
+  color: #fff;
+}
+
+.modalActions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 1050px) {
+  .issueTable {
+    min-width: 760px;
+  }
+}
+
+@media (max-width: 900px) {
+  .issueWorkspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .issuesBody {
+    padding-top: 22px;
+  }
+
+  .issueStats article {
+    min-height: 78px;
+    padding: 10px;
+    column-gap: 9px;
+  }
+
+  .issueStats article > div {
+    width: 32px;
+    height: 32px;
+  }
+
+  .issuesPanel {
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .statusTabs {
+    overflow-x: auto;
+    gap: 3px;
+  }
+
+  .statusTab {
+    padding-right: 9px;
+    padding-left: 9px;
+  }
+
+  .tableToolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .selectGroup {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .toolbarSelect {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .issueStats {
+    gap: 7px;
+  }
+
+  .issueStats article {
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: 6px;
+  }
+
+  .issueStats article > div {
+    width: 27px;
+    height: 27px;
+    font-size: 15px;
+  }
+
+  .issueStats article p {
+    font-size: 9px;
+  }
+
+  .issueStats article strong {
+    font-size: 20px;
+  }
+
+  .statusTab {
+    font-size: 10px;
+  }
+
+  .issueModal {
+    padding: 17px;
+  }
+}

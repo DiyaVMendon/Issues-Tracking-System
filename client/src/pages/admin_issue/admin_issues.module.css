@@ -1,0 +1,865 @@
+.issuesBody {
+  padding-top: 20px;
+}
+
+.accessPill {
+  position: absolute;
+  left: 50%;
+  padding: 5px 22px;
+  border-radius: 7px;
+  background: #571078;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.headingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.headingRow h1 {
+  margin: 0;
+  color: #22243a;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+}
+
+.headingRow p {
+  margin: 4px 0 0;
+  color: #77768c;
+  font-size: 11px;
+}
+
+.createButton,
+.saveButton {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #6334cb;
+  border-radius: 7px;
+  background: #6334cb;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.createButton:hover,
+.saveButton:hover:not(:disabled) {
+  background: #5226b5;
+}
+
+.issuesPanel {
+  overflow: visible;
+  padding: 11px 12px 9px;
+  border: 1px solid #e8e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.5fr) repeat(3, minmax(100px, 1fr)) minmax(110px, 0.8fr);
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.searchBox {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #dedeea;
+  border-radius: 7px;
+  color: #595870;
+}
+
+.searchBox:focus-within {
+  border-color: #8c69e2;
+  box-shadow: 0 0 0 3px rgb(112 72 213 / 10%);
+}
+
+.searchBox > span:first-child {
+  font-size: 19px;
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #29283f;
+  font: inherit;
+  font-size: 10px;
+}
+
+.searchBox input::placeholder {
+  color: #85849a;
+}
+
+.filterSelect {
+  min-width: 0;
+  width: 100%;
+}
+
+.toolbar :global(.admin-select__control) {
+  min-height: 34px;
+}
+
+.toolbar :global(.admin-select__value-container) {
+  overflow: hidden;
+}
+
+.toolbar :global(.admin-select__single-value) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sortSelect {
+  grid-column: 5;
+}
+
+.bulkActions {
+  display: flex;
+  min-height: 33px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 9px;
+  border: 1px solid #e6def7;
+  border-radius: 7px;
+  background: #f8f5ff;
+  color: #57516d;
+  font-size: 10px;
+}
+
+.bulkActions button {
+  border: 0;
+  background: transparent;
+  color: #bd303d;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.bulkActions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.assigneeWarning {
+  margin: 0 0 8px;
+  color: #9b6200;
+  font-size: 10px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  border: 1px solid #efeff5;
+  border-radius: 8px;
+}
+
+.issueTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.issueTable thead {
+  background: #f4f3fa;
+}
+
+.issueTable th {
+  height: 33px;
+  padding: 0 8px;
+  color: #29283f;
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.issueTable td {
+  height: 35px;
+  padding: 5px 8px;
+  border-top: 1px solid #efeff5;
+  color: #36354b;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.issueTable tbody tr:hover {
+  background: #fcfbff;
+}
+
+.checkboxColumn {
+  width: 32px;
+  text-align: center;
+}
+
+.checkboxColumn input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: #7048d5;
+  cursor: pointer;
+}
+
+.issueId {
+  color: #29283f !important;
+  font-size: 9px !important;
+  font-weight: 750;
+}
+
+.titleCell {
+  display: flex;
+  min-width: 130px;
+  max-width: 240px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.titleCell strong,
+.titleCell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titleCell strong {
+  color: #2e2c43;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.titleCell span {
+  max-width: 230px;
+  color: #77768b;
+  font-size: 8px;
+}
+
+.priorityBadge,
+.statusBadge {
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.priorityBadge span {
+  font-size: 10px;
+}
+
+.high {
+  background: #ffe4e4;
+  color: #dc3535;
+}
+
+.medium {
+  background: #fff1d5;
+  color: #bd670c;
+}
+
+.low {
+  background: #e0f6e5;
+  color: #23833e;
+}
+
+.other {
+  background: #efeff4;
+  color: #67667a;
+}
+
+.statusBadge {
+  padding-right: 7px;
+  padding-left: 7px;
+}
+
+.open {
+  background: #fff0d3;
+  color: #b96a08;
+}
+
+.inProgress {
+  background: #dceaff;
+  color: #236bc2;
+}
+
+.closed {
+  background: #dcf4df;
+  color: #18753a;
+}
+
+.assignee {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assignee > span {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e9e5f5;
+  color: #514784;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.iconButton {
+  display: grid;
+  width: 22px;
+  height: 21px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #514a80;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.iconButton:hover {
+  background: #f1edfb;
+}
+
+.iconButton:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.deleteButton {
+  color: #e33946;
+}
+
+.tableMessage {
+  height: 90px !important;
+  color: #85849a !important;
+  text-align: center;
+}
+
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 3px 0;
+  color: #89889b;
+  font-size: 9px;
+}
+
+.issueWorkspace {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.9fr) minmax(0, 1.35fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.issueListColumn {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #efedf5;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.listHeading {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  border-bottom: 1px solid #efedf5;
+  color: #77768c;
+  font-size: 9px;
+}
+
+.listHeading strong {
+  color: #39374f;
+  font-size: 10px;
+}
+
+.issueList {
+  display: grid;
+  gap: 6px;
+  padding: 7px;
+}
+
+.issueListItem {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.issueListItem:hover,
+.selectedIssue {
+  border-color: #d7c9f5;
+  background: #f7f3ff;
+}
+
+.issueListItem > input {
+  width: 13px;
+  height: 13px;
+  margin: 3px 0 0;
+  accent-color: #7048d5;
+  cursor: pointer;
+}
+
+.issueListSelect {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.issueListTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.issueListTop > strong {
+  color: #4c3584;
+  font-size: 8px;
+}
+
+.issueListTitle {
+  overflow: hidden;
+  color: #28263e;
+  font-size: 10px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issueListDescription {
+  overflow: hidden;
+  color: #77768b;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issueListMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #5b5870;
+  font-size: 8px;
+}
+
+.emptyDetail {
+  display: grid;
+  min-height: 310px;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed #ded9eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #77768c;
+  text-align: center;
+}
+
+.emptyDetail > span {
+  color: #7048d5;
+  font-size: 26px;
+}
+
+.emptyDetail strong {
+  color: #39374f;
+  font-size: 12px;
+}
+
+.emptyDetail p {
+  max-width: 240px;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 440px) {
+  .tableFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgb(25 19 47 / 50%);
+}
+
+.issueModal {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 18px;
+  border: 1px solid #e8e6f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(22 16 44 / 25%);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -18px -18px 15px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #efedf4;
+}
+
+.modalHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modalIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: #f0e9ff;
+  color: #7048d5;
+  font-size: 18px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  color: #26243b;
+  font-size: 16px;
+}
+
+.modalHeader p {
+  margin: 3px 0 0;
+  color: #77768c;
+  font-size: 9px;
+}
+
+.closeButton {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #68677b;
+  cursor: pointer;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  background: #f3f1f7;
+}
+
+.issueForm {
+  display: grid;
+  gap: 11px;
+}
+
+.formField {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  color: #35334a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.formField b {
+  color: #e34b55;
+}
+
+.formField > input,
+.formField > textarea {
+  width: 100%;
+  min-height: 34px;
+  padding: 8px 10px;
+  border: 1px solid #dedeea;
+  border-radius: 7px;
+  outline: 0;
+  color: #302f45;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.formField > textarea {
+  min-height: 67px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.formField > input:focus,
+.formField > textarea:focus {
+  border-color: #8c69e2;
+  box-shadow: 0 0 0 3px rgb(112 72 213 / 10%);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+.formGrid :global(.admin-select__control) {
+  min-height: 34px;
+}
+
+.formGrid :global(.admin-select__menu-portal) {
+  z-index: 30;
+}
+
+.uploadBox {
+  position: relative;
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px dashed #a88be9;
+  border-radius: 8px;
+  background: #faf8ff;
+  color: #68647d;
+  font-size: 9px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.uploadBox > span {
+  color: #7048d5;
+  font-size: 18px;
+}
+
+.uploadBox input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.formError {
+  margin: 0;
+  color: #b5303c;
+  font-size: 10px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.cancelButton {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #dcdbe6;
+  border-radius: 7px;
+  background: #fff;
+  color: #5c5a70;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.cancelButton:hover {
+  background: #f8f7fb;
+}
+
+.saveButton:disabled,
+.cancelButton:disabled,
+.closeButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.viewDescription {
+  margin: 0 0 14px;
+  color: #68677b;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.issueImage {
+  display: block;
+  max-width: 100%;
+  max-height: 250px;
+  margin: 0 auto 15px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.viewMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 17px;
+}
+
+.viewMeta > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px;
+  border: 1px solid #efedf4;
+  border-radius: 7px;
+  color: #858398;
+  font-size: 9px;
+}
+
+.viewMeta strong {
+  color: #37354b;
+  font-size: 10px;
+}
+
+@media (max-width: 1000px) {
+  .toolbar {
+    grid-template-columns: minmax(160px, 1.5fr) repeat(2, minmax(110px, 1fr));
+  }
+
+  .sortSelect {
+    grid-column: auto;
+  }
+
+  .issueTable {
+    min-width: 850px;
+  }
+}
+
+@media (max-width: 900px) {
+  .issueWorkspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .issuesBody {
+    padding: 20px 16px 18px;
+  }
+
+  .accessPill {
+    display: none;
+  }
+
+  .toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .searchBox {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 440px) {
+  .headingRow {
+    align-items: flex-start;
+  }
+
+  .headingRow h1 {
+    font-size: 22px;
+  }
+
+  .createButton {
+    padding: 0 8px;
+    font-size: 9px;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .searchBox {
+    grid-column: auto;
+  }
+
+  .modalBackdrop {
+    padding: 12px;
+  }
+
+  .issueModal {
+    max-height: calc(100vh - 24px);
+    padding: 14px;
+  }
+
+  .modalHeader {
+    margin: -14px -14px 13px;
+    padding: 12px 14px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

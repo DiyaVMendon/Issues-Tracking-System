@@ -1,0 +1,173 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 44% 56%;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #211b39;
+  background: #faf9ff;
+}
+.brandPanel {
+  background: linear-gradient(150deg, #241540, #40217d 62%, #693be2);
+  color: white;
+  padding: 48px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.brand {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #d4c6ff;
+}
+.brandPanel h1 {
+  font-size: clamp(36px, 4vw, 58px);
+  line-height: 1.12;
+  max-width: 500px;
+  margin: 16px 0;
+}
+.brandPanel p:not(.eyebrow) {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #e4dcfa;
+  max-width: 440px;
+}
+.brandFooter {
+  font-size: 13px !important;
+}
+.formPanel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+.card {
+  width: 100%;
+  max-width: 420px;
+}
+.card h2 {
+  font-size: 34px;
+  letter-spacing: -1px;
+  margin: 0 0 8px;
+}
+.subtitle {
+  color: #827c94;
+  margin: 0 0 34px;
+}
+.card form {
+  display: flex;
+  flex-direction: column;
+}
+.card label {
+  font-size: 14px;
+  font-weight: 650;
+  margin: 0 0 9px;
+}
+.card input {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #ddd8ed;
+  border-radius: 11px;
+  padding: 14px 15px;
+  font: inherit;
+  background: white;
+  outline: none;
+  margin-bottom: 23px;
+}
+.card input:focus {
+  border-color: #7547de;
+  box-shadow: 0 0 0 3px #7547de20;
+}
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card a {
+  color: #6536cf;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 650;
+}
+.passwordWrap {
+  position: relative;
+}
+.passwordWrap input {
+  padding-right: 72px;
+}
+.passwordWrap button {
+  position: absolute;
+  right: 12px;
+  top: 13px;
+  border: 0;
+  background: transparent;
+  color: #6435cb;
+  cursor: pointer;
+  font-weight: 650;
+}
+.submit {
+  background: #6736d3;
+  border: 0;
+  border-radius: 11px;
+  color: white;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 7px 20px #6536cf30;
+}
+.submit:hover {
+  background: #5427bc;
+}
+.submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.error {
+  color: #b42318;
+  background: #fff1f0;
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 13px;
+  margin: 0 0 18px;
+}
+.bottomText {
+  text-align: center;
+  color: #817a92;
+  font-size: 14px;
+  margin-top: 28px;
+}
+.mobileBrand {
+  display: none;
+}
+@media (max-width: 800px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+  .brandPanel {
+    display: none;
+  }
+  .formPanel {
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .mobileBrand {
+    display: block;
+    color: #6030c6;
+    font-size: 23px;
+    font-weight: 800;
+    margin-bottom: 45px;
+  }
+  .card h2 {
+    font-size: 29px;
+  }
+}

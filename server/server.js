@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 // import path from "path"
 import {connectdb} from "./config/db.js"
 import AuthRoutes from "./routes/AuthRoutes.js"
+import IssueRoutes from "./routes/IssueRoutes.js"
 
 
 dotenv.config();
@@ -33,4 +34,5 @@ app.use(async (req, res, next) => {
 });
 
 app.use("/api/auth",AuthRoutes)
+app.use("/api/issues",IssueRoutes);
 export default app;
