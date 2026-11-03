@@ -420,11 +420,13 @@
   }
 
   .tabs {
-    overflow-x: auto;
+    flex-wrap: wrap;
   }
 
   .tab {
-    flex: 1 0 auto;
+    flex: 1 1 120px;
+    min-height: 44px;
+    white-space: normal;
   }
 }
 

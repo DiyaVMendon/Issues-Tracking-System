@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
-import IssueDetailPanel from "../../components/IssueDetailPanel";
+import AssignedIssuesIcon from "../../components/AssignedIssuesIcon";
+import IssueStatusIcon from "../../components/IssueStatusIcon";
+import NotificationIcon from "../../components/NotificationIcon";
+import IssueDetailPanel from "../admin_issue/admin_issue_comments/IssueDetailPanel";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
 import styles from "./employee_issues.module.css";
 
@@ -122,6 +125,7 @@ export default function EmployeeIssues() {
   const [savingStatus, setSavingStatus] = useState(false);
   const [statusError, setStatusError] = useState("");
   const loadMoreRef = useRef(null);
+  const issueListRef = useRef(null);
 
   useEffect(() => {
     const timer = window.setTimeout(
@@ -217,7 +221,14 @@ export default function EmployeeIssues() {
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
-    if (!sentinel || typeof IntersectionObserver === "undefined") return undefined;
+    const root = issueListRef.current;
+    if (
+      !sentinel ||
+      !root ||
+      typeof IntersectionObserver === "undefined"
+    ) {
+      return undefined;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -226,11 +237,15 @@ export default function EmployeeIssues() {
           setPage((current) => current + 1);
         }
       },
-      { rootMargin: "160px" },
+      { root, rootMargin: "160px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [loading, pagination.hasNextPage]);
+
+  useEffect(() => {
+    if (page === 1) issueListRef.current?.scrollTo({ top: 0 });
+  }, [activeStatus, debouncedSearch, page, priorityFilter, sortOrder]);
 
   const counts = {
     all: summary.total,
@@ -293,7 +308,7 @@ export default function EmployeeIssues() {
             type="button"
             aria-label="Notifications"
           >
-            ♧
+            <NotificationIcon />
             <span className={dashboardStyles.notificationDot} />
           </button>
           <div className={dashboardStyles.userMenu}>
@@ -328,22 +343,22 @@ export default function EmployeeIssues() {
             aria-label="Assigned issue summary"
           >
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.totalCard}`}>
-              <div className={dashboardStyles.statIcon}>▱</div>
+              <div className={dashboardStyles.statIcon}><AssignedIssuesIcon /></div>
               <p>Assigned Issues</p>
               <strong>{loading ? "—" : counts.all}</strong>
             </article>
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.openCard}`}>
-              <div className={dashboardStyles.statIcon}>△</div>
+              <div className={dashboardStyles.statIcon}><IssueStatusIcon status="open" /></div>
               <p>Open</p>
               <strong>{loading ? "—" : counts.open}</strong>
             </article>
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.progressCard}`}>
-              <div className={dashboardStyles.statIcon}>◴</div>
+              <div className={dashboardStyles.statIcon}><IssueStatusIcon status="inProgress" /></div>
               <p>In Progress</p>
               <strong>{loading ? "—" : counts.inProgress}</strong>
             </article>
             <article className={`${dashboardStyles.statCard} ${dashboardStyles.closedCard}`}>
-              <div className={dashboardStyles.statIcon}>✓</div>
+              <div className={dashboardStyles.statIcon}><IssueStatusIcon status="closed" /></div>
               <p>Closed</p>
               <strong>{loading ? "—" : counts.closed}</strong>
             </article>
@@ -430,8 +445,10 @@ export default function EmployeeIssues() {
               </div>
             </div>
 
-            <div className={styles.issueWorkspace}>
-              <div className={styles.issueListColumn}>
+            <div
+              className={`${styles.issueWorkspace} ${selectedIssue ? styles.issueWorkspaceWithDetail : ""}`}
+            >
+              <div className={styles.issueListColumn} ref={issueListRef}>
                 <div className={styles.listHeading}>
                   <strong>{pagination.total} Issues</strong>
                   <span>Sort: {sortOptions.find((option) => option.value === sortOrder)?.label.replace("Sort: ", "")}</span>
@@ -503,13 +520,7 @@ export default function EmployeeIssues() {
                   }}
                   onEmployeeStatusSave={handleStatusSave}
                 />
-              ) : (
-                <div className={styles.emptyDetail}>
-                  <span>▤</span>
-                  <strong>Select an issue to view its details</strong>
-                  <p>Choose an issue to view its description, attachment, and activity.</p>
-                </div>
-              )}
+              ) : null}
             </div>
           </section>
         </div>

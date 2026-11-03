@@ -1,4 +1,5 @@
 import IssuesModel from "../models/IssuesModel.js";
+import IssueCommentModel from "../models/IssueCommentModel.js";
 import User from "../models/user.js";
 import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
@@ -273,6 +274,83 @@ export const getIssueById = async (req, res) => {
     }
 }
 
+const getAccessibleIssue = async (req, res) => {
+    const userId = req.user?.id;
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+        res.status(401).json({ message: "Invalid authenticated user." });
+        return null;
+    }
+
+    const user = await User.findById(userId).select("role");
+    if (!user) {
+        res.status(401).json({ message: "Authenticated user no longer exists." });
+        return null;
+    }
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        res.status(400).json({ message: "Invalid issue ID." });
+        return null;
+    }
+
+    const issue = await IssuesModel.findById(req.params.id);
+    if (!issue) {
+        res.status(404).json({ message: "Issue not found." });
+        return null;
+    }
+    const isAdmin = user.role?.toLowerCase() === "admin";
+    if (!isAdmin && String(issue.assigned_to) !== String(user._id)) {
+        res.status(403).json({ message: "You can only comment on issues assigned to your account." });
+        return null;
+    }
+
+    return issue;
+};
+
+export const getIssueComments = async (req, res) => {
+    try {
+        const issue = await getAccessibleIssue(req, res);
+        if (!issue) return;
+
+        const comments = await IssueCommentModel.find({ issue: issue._id })
+            .populate("author", "name avatar")
+            .sort({ createdAt: 1 });
+        return res.status(200).json({
+            message: "Issue comments retrieved successfully.",
+            data: comments,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+export const addIssueComment = async (req, res) => {
+    try {
+        const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+        if (!text) {
+            return res.status(400).json({ message: "Comment cannot be empty." });
+        }
+        if (text.length > 2000) {
+            return res.status(400).json({ message: "Comment must be 2000 characters or fewer." });
+        }
+
+        const issue = await getAccessibleIssue(req, res);
+        if (!issue) return;
+
+        const comment = await IssueCommentModel.create({
+            issue: issue._id,
+            author: req.user.id,
+            text,
+        });
+        await comment.populate("author", "name avatar");
+
+        return res.status(201).json({
+            message: "Comment added successfully.",
+            data: comment,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 export const updateIssue = async (req, res) => {
     try{
         const {id} = req.params;
@@ -306,3 +384,5 @@ export const deleteIssue = async (req, res) => {
         res.status(500).json({message:error.message})
     }
 }
+
+

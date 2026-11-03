@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Select from "react-select";
+import { axiosRequest } from "../../../api/axiosRequest";
 import styles from "./issue_detail_panel.module.css";
 
 const statusOptions = [
@@ -92,9 +93,65 @@ export default function IssueDetailPanel({
   const [employeeDueDate, setEmployeeDueDate] = useState(
     toDateInput(issue?.due_date),
   );
-  const [activityTab, setActivityTab] = useState("details");
+  const [activityTab, setActivityTab] = useState("comments");
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsError, setCommentsError] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const issueId = issue?._id || issue?.id;
+
+  useEffect(() => {
+    if (!issueId) return undefined;
+
+    let active = true;
+
+    axiosRequest(`/issues/${encodeURIComponent(issueId)}/comments`)
+      .then((response) => {
+        if (active) setComments(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        setCommentsError(
+          requestError.response?.data?.message || "Could not load comments.",
+        );
+      })
+      .finally(() => {
+        if (active) setCommentsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [issueId]);
 
   if (!issue) return null;
+
+  const submitComment = async (event) => {
+    event.preventDefault();
+    const text = commentText.trim();
+    if (!text || commentSubmitting) return;
+
+    setCommentSubmitting(true);
+    setCommentsError("");
+    try {
+      const response = await axiosRequest(
+        `/issues/${encodeURIComponent(issueId)}/comments`,
+        { text },
+        "POST",
+        {},
+        { skipLoader: true },
+      );
+      setComments((current) => [...current, response.data]);
+      setCommentText("");
+    } catch (requestError) {
+      setCommentsError(
+        requestError.response?.data?.message || "Could not add comment.",
+      );
+    } finally {
+      setCommentSubmitting(false);
+    }
+  };
 
   const adminUpdate = (patch) => {
     setMenuOpen(false);
@@ -276,13 +333,34 @@ export default function IssueDetailPanel({
         </div>
       </div>
 
+      <div className={styles.detailContent}>
+        <h3>Description</h3>
+        <p className={styles.description}>
+          {issue.description || "No description provided."}
+        </p>
+        <h3>Attachments ({issue.issue_image ? 1 : 0})</h3>
+        {issue.issue_image ? (
+          <a
+            className={styles.attachment}
+            href={issue.issue_image}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={issue.issue_image} alt="Issue attachment" />
+            <span>View attachment</span>
+          </a>
+        ) : (
+          <p className={styles.muted}>No attachments for this issue.</p>
+        )}
+      </div>
+
       <nav className={styles.detailTabs} aria-label="Issue information">
         <button
-          className={activityTab === "details" ? styles.selectedTab : ""}
+          className={activityTab === "comments" ? styles.selectedTab : ""}
           type="button"
-          onClick={() => setActivityTab("details")}
+          onClick={() => setActivityTab("comments")}
         >
-          ▤ Details
+          ▣ Comments ({comments.length})
         </button>
         <button
           className={activityTab === "activity" ? styles.selectedTab : ""}
@@ -293,27 +371,68 @@ export default function IssueDetailPanel({
         </button>
       </nav>
 
-      {activityTab === "details" ? (
-        <div className={styles.detailContent}>
-          <h3>Description</h3>
-          <p className={styles.description}>
-            {issue.description || "No description provided."}
-          </p>
-          <h3>Attachments ({issue.issue_image ? 1 : 0})</h3>
-          {issue.issue_image ? (
-            <a
-              className={styles.attachment}
-              href={issue.issue_image}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img src={issue.issue_image} alt="Issue attachment" />
-              <span>View attachment</span>
-            </a>
-          ) : (
-            <p className={styles.muted}>No attachments for this issue.</p>
+      {activityTab === "comments" ? (
+        <section className={styles.commentsSection} aria-label="Issue comments">
+          <div className={styles.commentsList} aria-live="polite">
+            {commentsLoading ? (
+              <p className={styles.muted}>Loading comments…</p>
+            ) : comments.length ? (
+              comments.map((comment) => {
+                const author = comment.author;
+                const authorName =
+                  typeof author === "object" ? author?.name || "User" : "User";
+                const avatar = typeof author === "object" ? author?.avatar : "";
+                return (
+                  <article className={styles.comment} key={comment._id}>
+                    {avatar ? (
+                      <img
+                        className={styles.commentAvatar}
+                        src={avatar}
+                        alt=""
+                      />
+                    ) : (
+                      <span className={styles.commentAvatar}>
+                        {authorName.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <div className={styles.commentBody}>
+                      <div className={styles.commentMeta}>
+                        <strong>{authorName}</strong>
+                        <time>{formatDate(comment.createdAt, true)}</time>
+                      </div>
+                      <p>{comment.text}</p>
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <p className={styles.muted}>No comments yet. Start the conversation.</p>
+            )}
+          </div>
+          {commentsError && (
+            <p className={styles.error} role="alert">{commentsError}</p>
           )}
-        </div>
+          <form className={styles.commentForm} onSubmit={submitComment}>
+            <textarea
+              aria-label="Add a comment"
+              maxLength={2000}
+              placeholder="Add a comment..."
+              rows={2}
+              value={commentText}
+              onChange={(event) => setCommentText(event.target.value)}
+              disabled={commentSubmitting || commentsLoading}
+            />
+            <button
+              type="submit"
+              aria-label="Send comment"
+              disabled={
+                !commentText.trim() || commentSubmitting || commentsLoading
+              }
+            >
+              ➤
+            </button>
+          </form>
+        </section>
       ) : (
         <div className={styles.activityList}>
           <article>

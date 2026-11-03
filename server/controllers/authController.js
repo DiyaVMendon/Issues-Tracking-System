@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
 import { Readable } from "stream";
 
@@ -171,6 +172,10 @@ export const Login = async (req, res) => {
       });
     }
 
+    if (user.isActive === false) {
+      return res.status(403).json({ message: "This account is inactive." });
+    }
+
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       return res.status(400).json({
@@ -228,7 +233,9 @@ export const getAllUsers = async (req, res) => {
       });
     }
 
-    const users = await User.find().select("_id name email role").sort({ name: 1 });
+    const users = await User.find({ isActive: { $ne: false } })
+      .select("_id name email role")
+      .sort({ name: 1 });
     return res.status(200).json({
       message: "Users fetched successfully",
       data: users,
@@ -237,6 +244,207 @@ export const getAllUsers = async (req, res) => {
     return res.status(500).json({
       message: error.message,
     });
+  }
+};
+
+const getAdminRequester = async (req, res) => {
+  const requester = await User.findById(req.user?.id).select("role");
+  if (!requester || requester.role?.toLowerCase() !== "admin") {
+    res.status(403).json({ message: "Only administrators can manage users." });
+    return null;
+  }
+  return requester;
+};
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getManageableUserFields = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  isActive: user.isActive !== false,
+  createdAt: user.createdAt,
+});
+
+export const getManagedUsers = async (req, res) => {
+  try {
+    const requester = await getAdminRequester(req, res);
+    if (!requester) return;
+
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 10);
+    if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1) {
+      return res.status(400).json({ message: "Page and limit must be positive integers." });
+    }
+    const safeLimit = Math.min(limit, 100);
+    const filter = {};
+    const search = req.query.search?.toString().trim();
+    if (search) {
+      const regex = new RegExp(escapeRegex(search), "i");
+      filter.$or = [{ name: regex }, { email: regex }];
+    }
+
+    const role = req.query.role?.toString().trim().toLowerCase();
+    if (role && role !== "all") {
+      if (role === "admin") filter.role = /^admin$/i;
+      else if (role === "employee") filter.role = { $not: /^admin$/i };
+      else return res.status(400).json({ message: "Unsupported role filter." });
+    }
+
+    const status = req.query.status?.toString().trim().toLowerCase();
+    if (status && status !== "all") {
+      if (status === "active") filter.isActive = { $ne: false };
+      else if (status === "inactive") filter.isActive = false;
+      else return res.status(400).json({ message: "Unsupported status filter." });
+    }
+
+    const [total, stats, users] = await Promise.all([
+      User.countDocuments(filter),
+      User.aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+            admins: {
+              $sum: { $cond: [{ $eq: [{ $toLower: { $ifNull: ["$role", ""] } }, "admin"] }, 1, 0] },
+            },
+            employees: {
+              $sum: { $cond: [{ $ne: [{ $toLower: { $ifNull: ["$role", ""] } }, "admin"] }, 1, 0] },
+            },
+          },
+        },
+      ]),
+      User.find(filter)
+        .select("name email role isActive createdAt")
+        .sort({ createdAt: -1, _id: 1 })
+        .skip((page - 1) * safeLimit)
+        .limit(safeLimit),
+    ]);
+
+    const summary = stats[0] || { total: 0, admins: 0, employees: 0 };
+    const totalPages = Math.ceil(total / safeLimit);
+    const currentPage = totalPages ? Math.min(page, totalPages) : 1;
+    return res.status(200).json({
+      message: "Users retrieved successfully.",
+      data: users.map(getManageableUserFields),
+      summary: {
+        total: summary.total,
+        admins: summary.admins,
+        employees: summary.employees,
+      },
+      pagination: {
+        page: currentPage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasNextPage: currentPage < totalPages,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const createManagedUser = async (req, res) => {
+  try {
+    const requester = await getAdminRequester(req, res);
+    if (!requester) return;
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    const password = typeof req.body?.password === "string" ? req.body.password : "";
+    if (req.body?.role !== "admin" && req.body?.role !== "employee") {
+      return res.status(400).json({ message: "Choose a valid user role." });
+    }
+    if (req.body?.isActive !== undefined && typeof req.body.isActive !== "boolean") {
+      return res.status(400).json({ message: "Choose a valid account status." });
+    }
+    const role = req.body.role === "admin" ? "admin" : "user";
+    if (!name || name.length > 100 || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Enter a valid name and email address." });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long." });
+    }
+    if (await User.exists({ email })) {
+      return res.status(409).json({ message: "An account with this email already exists." });
+    }
+    const user = await User.create({
+      name,
+      email,
+      password: await bcrypt.hash(password, 10),
+      role,
+      isActive: req.body?.isActive !== false,
+    });
+    return res.status(201).json({
+      message: "User created successfully.",
+      data: getManageableUserFields(user),
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateManagedUser = async (req, res) => {
+  try {
+    const requester = await getAdminRequester(req, res);
+    if (!requester) return;
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid user ID." });
+    }
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    if (!name || name.length > 100 || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Enter a valid name and email address." });
+    }
+    if (await User.exists({ email, _id: { $ne: user._id } })) {
+      return res.status(409).json({ message: "An account with this email already exists." });
+    }
+    if (req.body?.role !== "admin" && req.body?.role !== "employee") {
+      return res.status(400).json({ message: "Choose a valid user role." });
+    }
+    if (typeof req.body?.isActive !== "boolean") {
+      return res.status(400).json({ message: "Choose a valid account status." });
+    }
+    if (String(user._id) === String(requester._id) &&
+      (req.body.role !== "admin" || req.body.isActive === false)) {
+      return res.status(400).json({ message: "You cannot remove your own administrator access or deactivate your account." });
+    }
+
+    user.name = name;
+    user.email = email;
+    user.role = req.body.role === "admin" ? "admin" : "user";
+    user.isActive = req.body.isActive;
+    await user.save();
+    return res.status(200).json({
+      message: "User updated successfully.",
+      data: getManageableUserFields(user),
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteManagedUser = async (req, res) => {
+  try {
+    const requester = await getAdminRequester(req, res);
+    if (!requester) return;
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid user ID." });
+    }
+    if (String(requester._id) === id) {
+      return res.status(400).json({ message: "You cannot delete your own account." });
+    }
+    const user = await User.findByIdAndDelete(id);
+    if (!user) return res.status(404).json({ message: "User not found." });
+    return res.status(200).json({ message: "User deleted successfully.", data: { _id: user._id } });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 

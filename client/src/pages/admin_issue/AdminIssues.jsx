@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
-import IssueDetailPanel from "../../components/IssueDetailPanel";
+import NotificationIcon from "../../components/NotificationIcon";
+import IssueDetailPanel from "./admin_issue_comments/IssueDetailPanel";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
 import styles from "./admin_issues.module.css";
 
@@ -40,15 +41,15 @@ const emptyForm = {
 const selectStyles = {
   control: (base, state) => ({
     ...base,
-    minHeight: 34,
+    minHeight: 40,
     borderColor: state.isFocused ? "#8c69e2" : "#dedeea",
     borderRadius: 8,
     boxShadow: state.isFocused ? "0 0 0 3px rgb(112 72 213 / 10%)" : "none",
     "&:hover": { borderColor: "#8c69e2" },
     cursor: "pointer",
-    fontSize: 10,
+    fontSize: 11,
   }),
-  valueContainer: (base) => ({ ...base, padding: "0 9px" }),
+  valueContainer: (base) => ({ ...base, padding: "0 10px" }),
   singleValue: (base) => ({ ...base, color: "#39384f" }),
   placeholder: (base) => ({ ...base, color: "#39384f" }),
   indicatorsContainer: (base) => ({ ...base, minHeight: 32 }),
@@ -148,7 +149,9 @@ export default function AdminIssues() {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingIds, setDeletingIds] = useState([]);
+  const [deleteConfirmationIds, setDeleteConfirmationIds] = useState([]);
   const loadMoreRef = useRef(null);
+  const issueListRef = useRef(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -225,7 +228,14 @@ export default function AdminIssues() {
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
-    if (!sentinel || typeof IntersectionObserver === "undefined") return undefined;
+    const root = issueListRef.current;
+    if (
+      !sentinel ||
+      !root ||
+      typeof IntersectionObserver === "undefined"
+    ) {
+      return undefined;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -234,11 +244,22 @@ export default function AdminIssues() {
           setPage((current) => current + 1);
         }
       },
-      { rootMargin: "160px" },
+      { root, rootMargin: "160px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loading, pagination.hasNextPage]);
+  }, [loading, pagination.hasNextPage, viewingIssue]);
+
+  useEffect(() => {
+    if (page === 1) issueListRef.current?.scrollTo({ top: 0 });
+  }, [
+    assigneeFilter,
+    debouncedSearch,
+    page,
+    priorityFilter,
+    sortOrder,
+    statusFilter,
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -379,14 +400,6 @@ export default function AdminIssues() {
   };
 
   const removeIssues = async (ids) => {
-    const confirmed =
-      ids.length === 1
-        ? window.confirm("Delete this issue? This action cannot be undone.")
-        : window.confirm(
-            `Delete ${ids.length} selected issues? This action cannot be undone.`,
-          );
-    if (!confirmed) return;
-
     setDeletingIds(ids);
     setError("");
     const results = await Promise.allSettled(
@@ -415,6 +428,19 @@ export default function AdminIssues() {
       setRefreshKey((current) => current + 1);
     }
     return deletedIds;
+  };
+
+  const confirmIssueDeletion = async () => {
+    const ids = deleteConfirmationIds;
+    if (!ids.length || deletingIds.length) return;
+
+    const deletedIds = await removeIssues(ids);
+    if (deletedIds?.length) {
+      setDeleteConfirmationIds([]);
+      if (viewingIssue && deletedIds.includes(String(issueKey(viewingIssue)))) {
+        setViewingIssue(null);
+      }
+    }
   };
 
   const updateSelectedIssue = async (changes) => {
@@ -512,14 +538,13 @@ export default function AdminIssues() {
           IssueTracker
         </div>
         <div className={dashboardStyles.topbarSpacer} />
-        <span className={styles.accessPill}>Admin - Issues (Full Access)</span>
         <div className={dashboardStyles.topbarSpacer} />
         <button
           className={dashboardStyles.notificationButton}
           type="button"
           aria-label="Notifications"
         >
-          ♧
+          <NotificationIcon />
           <span className={dashboardStyles.notificationDot} />
         </button>
         <div className={dashboardStyles.userMenu}>
@@ -648,7 +673,7 @@ export default function AdminIssues() {
               <span>{selectedIds.length} selected</span>
               <button
                 type="button"
-                onClick={() => removeIssues(selectedIds)}
+                onClick={() => setDeleteConfirmationIds([...selectedIds])}
                 disabled={deletingIds.length > 0}
               >
                 Delete selected
@@ -656,8 +681,10 @@ export default function AdminIssues() {
             </div>
           )}
 
-          <div className={styles.issueWorkspace}>
-            <div className={styles.issueListColumn}>
+          <div
+            className={`${styles.issueWorkspace} ${viewingIssue ? styles.issueWorkspaceWithDetail : ""}`}
+          >
+            <div className={styles.issueListColumn} ref={issueListRef}>
               <div className={styles.listHeading}>
                 <strong>{pagination.total} Issues</strong>
                 <span>Sort: {sortOptions.find((option) => option.value === sortOrder)?.label.replace("Sort: ", "")}</span>
@@ -736,21 +763,14 @@ export default function AdminIssues() {
                   setViewingIssue(null);
                   openEditForm(issue);
                 }}
-                onDelete={async () => {
+                onDelete={() => {
                   const id = String(issueKey(viewingIssue));
-                  const deleted = await removeIssues([id]);
-                  if (deleted.includes(id)) setViewingIssue(null);
+                  setDeleteConfirmationIds([id]);
                 }}
                 onDuplicate={duplicateSelectedIssue}
                 onAdminUpdate={updateSelectedIssue}
               />
-            ) : (
-              <div className={styles.emptyDetail}>
-                <span>▤</span>
-                <strong>Select an issue to view its details</strong>
-                <p>Choose an issue from the list to see its description and activity.</p>
-              </div>
-            )}
+            ) : null}
           </div>
         </section>
       </div>
@@ -958,6 +978,58 @@ export default function AdminIssues() {
                 </div>
               </form>
             </section>
+        </div>
+      )}
+      {deleteConfirmationIds.length > 0 && (
+        <div
+          className={styles.modalBackdrop}
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              deletingIds.length === 0
+            ) {
+              setDeleteConfirmationIds([]);
+            }
+          }}
+        >
+          <section
+            className={styles.confirmModal}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-confirmation-title"
+            aria-describedby="delete-confirmation-description"
+          >
+            <span className={styles.confirmIcon} aria-hidden="true">
+              !
+            </span>
+            <h2 id="delete-confirmation-title">
+              Delete issue{deleteConfirmationIds.length > 1 ? "s" : ""}?
+            </h2>
+            <p id="delete-confirmation-description">
+              {deleteConfirmationIds.length === 1
+                ? "This issue will be permanently deleted. This action cannot be undone."
+                : `${deleteConfirmationIds.length} selected issues will be permanently deleted. This action cannot be undone.`}
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelButton}
+                type="button"
+                onClick={() => setDeleteConfirmationIds([])}
+                disabled={deletingIds.length > 0}
+                autoFocus
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmDeleteButton}
+                type="button"
+                onClick={confirmIssueDeletion}
+                disabled={deletingIds.length > 0}
+              >
+                {deletingIds.length > 0 ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </section>
         </div>
       )}
     </section>

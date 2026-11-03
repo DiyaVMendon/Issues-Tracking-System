@@ -26,7 +26,7 @@
 .headingRow h1 {
   margin: 0;
   color: #22243a;
-  font-size: 25px;
+  font-size: 24px;
   font-weight: 750;
   letter-spacing: -0.04em;
 }
@@ -34,13 +34,13 @@
 .headingRow p {
   margin: 4px 0 0;
   color: #77768c;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .createButton,
 .saveButton {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
   gap: 7px;
@@ -51,7 +51,7 @@
   color: #fff;
   cursor: pointer;
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -62,8 +62,9 @@
 }
 
 .issuesPanel {
+  min-width: 0;
   overflow: visible;
-  padding: 11px 12px 9px;
+  padding: 12px;
   border: 1px solid #e8e8f0;
   border-radius: 12px;
   background: #fff;
@@ -72,15 +73,16 @@
 
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(170px, 1.5fr) repeat(3, minmax(100px, 1fr)) minmax(110px, 0.8fr);
-  gap: 9px;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(3, minmax(110px, 1fr)) minmax(120px, 0.8fr);
+  gap: 10px;
   align-items: center;
   margin-bottom: 10px;
 }
 
 .searchBox {
   display: flex;
-  height: 34px;
+  min-width: 0;
+  height: 40px;
   align-items: center;
   gap: 8px;
   padding: 0 10px;
@@ -105,7 +107,7 @@
   outline: 0;
   color: #29283f;
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .searchBox input::placeholder {
@@ -118,7 +120,7 @@
 }
 
 .toolbar :global(.admin-select__control) {
-  min-height: 34px;
+  min-height: 40px;
 }
 
 .toolbar :global(.admin-select__value-container) {
@@ -169,123 +171,14 @@
   font-size: 10px;
 }
 
-.tableScroll {
-  overflow-x: auto;
-  border: 1px solid #efeff5;
-  border-radius: 8px;
-}
-
-.issueTable {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.issueTable thead {
-  background: #f4f3fa;
-}
-
-.issueTable th {
-  height: 33px;
-  padding: 0 8px;
-  color: #29283f;
-  font-size: 9px;
-  font-weight: 750;
-  white-space: nowrap;
-}
-
-.issueTable td {
-  height: 35px;
-  padding: 5px 8px;
-  border-top: 1px solid #efeff5;
-  color: #36354b;
-  font-size: 9px;
-  white-space: nowrap;
-}
-
-.issueTable tbody tr:hover {
-  background: #fcfbff;
-}
-
-.checkboxColumn {
-  width: 32px;
-  text-align: center;
-}
-
-.checkboxColumn input {
-  width: 13px;
-  height: 13px;
-  margin: 0;
-  accent-color: #7048d5;
-  cursor: pointer;
-}
-
-.issueId {
-  color: #29283f !important;
-  font-size: 9px !important;
-  font-weight: 750;
-}
-
-.titleCell {
-  display: flex;
-  min-width: 130px;
-  max-width: 240px;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.titleCell strong,
-.titleCell span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.titleCell strong {
-  color: #2e2c43;
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.titleCell span {
-  max-width: 230px;
-  color: #77768b;
-  font-size: 8px;
-}
-
-.priorityBadge,
 .statusBadge {
   display: inline-flex;
   min-height: 18px;
   align-items: center;
-  gap: 3px;
   padding: 2px 6px;
   border-radius: 5px;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
-}
-
-.priorityBadge span {
-  font-size: 10px;
-}
-
-.high {
-  background: #ffe4e4;
-  color: #dc3535;
-}
-
-.medium {
-  background: #fff1d5;
-  color: #bd670c;
-}
-
-.low {
-  background: #e0f6e5;
-  color: #23833e;
-}
-
-.other {
-  background: #efeff4;
-  color: #67667a;
 }
 
 .statusBadge {
@@ -308,57 +201,6 @@
   color: #18753a;
 }
 
-.assignee {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.assignee > span {
-  display: grid;
-  width: 18px;
-  height: 18px;
-  place-items: center;
-  border-radius: 50%;
-  background: #e9e5f5;
-  color: #514784;
-  font-size: 8px;
-  font-weight: 700;
-}
-
-.rowActions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.iconButton {
-  display: grid;
-  width: 22px;
-  height: 21px;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: #514a80;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.iconButton:hover {
-  background: #f1edfb;
-}
-
-.iconButton:disabled {
-  cursor: wait;
-  opacity: 0.5;
-}
-
-.deleteButton {
-  color: #e33946;
-}
-
 .tableMessage {
   height: 90px !important;
   color: #85849a !important;
@@ -377,38 +219,59 @@
 
 .issueWorkspace {
   display: grid;
-  grid-template-columns: minmax(270px, 0.9fr) minmax(0, 1.35fr);
+  min-width: 0;
+  max-width: 100%;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   align-items: start;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.issueWorkspaceWithDetail {
+  grid-template-columns: minmax(270px, 0.9fr) minmax(480px, 1.35fr);
 }
 
 .issueListColumn {
+  display: flex;
+  max-height: 68vh;
+  min-height: 180px;
+  flex-direction: column;
   min-width: 0;
-  overflow: hidden;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #c9c1dc transparent;
+  scrollbar-width: thin;
   border: 1px solid #efedf5;
   border-radius: 9px;
   background: #fff;
 }
 
 .listHeading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
+  flex: 0 0 auto;
   min-height: 36px;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding: 0 10px;
+  background: #fff;
   border-bottom: 1px solid #efedf5;
   color: #77768c;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .listHeading strong {
   color: #39374f;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .issueList {
   display: grid;
+  flex: 0 0 auto;
   gap: 6px;
   padding: 7px;
 }
@@ -460,13 +323,13 @@
 
 .issueListTop > strong {
   color: #4c3584;
-  font-size: 8px;
+  font-size: 9px;
 }
 
 .issueListTitle {
   overflow: hidden;
   color: #28263e;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -475,7 +338,7 @@
 .issueListDescription {
   overflow: hidden;
   color: #77768b;
-  font-size: 9px;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -485,7 +348,7 @@
   flex-wrap: wrap;
   gap: 7px;
   color: #5b5870;
-  font-size: 8px;
+  font-size: 9px;
 }
 
 .emptyDetail {
@@ -517,6 +380,12 @@
   margin: 0;
   font-size: 10px;
   line-height: 1.5;
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .issueWorkspaceWithDetail {
+    grid-template-columns: minmax(250px, 0.8fr) minmax(480px, 1.2fr);
+  }
 }
 
 @media (max-width: 440px) {
@@ -558,6 +427,65 @@
   border-radius: 14px;
   background: #fff;
   box-shadow: 0 24px 70px rgb(22 16 44 / 25%);
+}
+
+.confirmModal {
+  display: grid;
+  width: min(400px, 100%);
+  justify-items: center;
+  padding: 26px;
+  border: 1px solid #e8e6f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(22 16 44 / 25%);
+  text-align: center;
+}
+
+.confirmIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff0f0;
+  color: #d63845;
+  font-size: 22px;
+  font-weight: 750;
+}
+
+.confirmModal h2 {
+  margin: 15px 0 0;
+  color: #29283f;
+  font-size: 18px;
+}
+
+.confirmModal p {
+  margin: 8px 0 20px;
+  color: #77768c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.confirmDeleteButton {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid #d63845;
+  border-radius: 7px;
+  background: #d63845;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.confirmDeleteButton:hover:not(:disabled) {
+  background: #b92432;
+}
+
+.confirmDeleteButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .modalHeader {
@@ -794,13 +722,19 @@
     grid-column: auto;
   }
 
-  .issueTable {
-    min-width: 850px;
-  }
 }
 
 @media (max-width: 900px) {
   .issueWorkspace {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: clip;
+  }
+
+  .issueListColumn {
+    max-height: 62vh;
+  }
+
+  .issueWorkspaceWithDetail {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -816,6 +750,10 @@
 
   .toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .issuesPanel {
+    padding: 9px;
   }
 
   .searchBox {

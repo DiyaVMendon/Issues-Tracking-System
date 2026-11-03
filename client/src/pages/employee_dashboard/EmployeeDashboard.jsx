@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosRequest } from "../../api/axiosRequest";
+import AssignedIssuesIcon from "../../components/AssignedIssuesIcon";
+import IssueStatusIcon from "../../components/IssueStatusIcon";
+import NotificationIcon from "../../components/NotificationIcon";
 import styles from "../admin_dashboard/admin_dashboard.module.css";
 
 const issueStatuses = [
@@ -104,7 +107,7 @@ export default function EmployeeDashboard() {
             type="button"
             aria-label="Notifications"
           >
-            ♧
+            <NotificationIcon />
             <span className={styles.notificationDot} />
           </button>
           <div className={styles.userMenu}>
@@ -143,22 +146,22 @@ export default function EmployeeDashboard() {
 
           <section className={styles.statsGrid} aria-label="Your issue summary">
             <article className={`${styles.statCard} ${styles.totalCard}`}>
-              <div className={styles.statIcon}>▦</div>
+              <div className={styles.statIcon}><AssignedIssuesIcon /></div>
               <p>Assigned Issues</p>
               <strong>{loading ? "—" : summary.total}</strong>
             </article>
             <article className={`${styles.statCard} ${styles.openCard}`}>
-              <div className={styles.statIcon}>△</div>
+              <div className={styles.statIcon}><IssueStatusIcon status="open" /></div>
               <p>Open</p>
               <strong>{loading ? "—" : counts.open}</strong>
             </article>
             <article className={`${styles.statCard} ${styles.progressCard}`}>
-              <div className={styles.statIcon}>◴</div>
+              <div className={styles.statIcon}><IssueStatusIcon status="inProgress" /></div>
               <p>In Progress</p>
               <strong>{loading ? "—" : counts.inProgress}</strong>
             </article>
             <article className={`${styles.statCard} ${styles.closedCard}`}>
-              <div className={styles.statIcon}>✓</div>
+              <div className={styles.statIcon}><IssueStatusIcon status="closed" /></div>
               <p>Closed</p>
               <strong>{loading ? "—" : counts.closed}</strong>
             </article>

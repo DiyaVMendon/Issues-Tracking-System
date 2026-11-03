@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   min-width: 0;
-  min-height: 430px;
+  min-height: 460px;
   flex-direction: column;
   padding: 16px;
   border: 1px solid #e8e8f0;
@@ -28,7 +28,7 @@
   display: inline-block;
   margin-bottom: 3px;
   color: #7048d5;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 750;
 }
 
@@ -36,7 +36,7 @@
   overflow-wrap: anywhere;
   margin: 0;
   color: #25243b;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 750;
 }
 
@@ -63,7 +63,7 @@
   color: #46435d;
   cursor: pointer;
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
 }
 
@@ -167,8 +167,8 @@
 .metadataGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  padding: 13px 0;
+  gap: 12px;
+  padding: 15px 0;
   border-bottom: 1px solid #efedf5;
 }
 
@@ -181,14 +181,14 @@
 
 .metadataField > span:first-child {
   color: #77758b;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 650;
 }
 
 .metadataField > strong {
   overflow: hidden;
   color: #343148;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -201,7 +201,7 @@
   align-items: center;
   padding: 3px 8px;
   border-radius: 6px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -250,7 +250,7 @@
   color: #656279;
   cursor: pointer;
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
 }
 
@@ -270,21 +270,20 @@
 }
 
 .detailContent {
-  flex: 1;
-  padding: 15px 3px;
+  padding: 12px 3px;
 }
 
 .detailContent h3 {
   margin: 0 0 7px;
   color: #37344e;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 750;
 }
 
 .description {
   margin: 0 0 18px;
   color: #55536b;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.65;
   white-space: pre-wrap;
 }
@@ -298,7 +297,7 @@
   border: 1px solid #e8e5f0;
   border-radius: 8px;
   color: #59566e;
-  font-size: 9px;
+  font-size: 10px;
   text-decoration: none;
 }
 
@@ -319,6 +318,123 @@
   align-content: start;
   gap: 11px;
   padding: 15px 3px;
+}
+
+.commentsSection {
+  display: flex;
+  min-height: 160px;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px 0 0;
+}
+
+.commentsList {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px 3px;
+}
+
+.comment {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.commentAvatar {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e7dcff;
+  color: #6334cb;
+  font-size: 10px;
+  font-weight: 750;
+  object-fit: cover;
+}
+
+.commentBody {
+  min-width: 0;
+  flex: 1;
+  padding: 6px 9px;
+  border-radius: 7px;
+  background: #f3f2f8;
+}
+
+.commentMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 3px 8px;
+  margin-bottom: 3px;
+}
+
+.commentMeta strong {
+  color: #38354d;
+  font-size: 10px;
+}
+
+.commentMeta time {
+  color: #858399;
+  font-size: 8px;
+}
+
+.commentBody p {
+  overflow-wrap: anywhere;
+  margin: 0;
+  color: #55536b;
+  font-size: 10px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.commentForm {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid #e8e5f0;
+  border-radius: 8px;
+}
+
+.commentForm:focus-within {
+  border-color: #9e86e3;
+  box-shadow: 0 0 0 2px rgb(112 72 213 / 9%);
+}
+
+.commentForm textarea {
+  min-width: 0;
+  flex: 1;
+  resize: vertical;
+  padding: 5px;
+  border: 0;
+  outline: 0;
+  color: #39364e;
+  font: inherit;
+  font-size: 9px;
+}
+
+.commentForm button {
+  width: 30px;
+  flex: 0 0 30px;
+  align-self: flex-end;
+  border: 0;
+  border-radius: 6px;
+  background: #7048d5;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.commentForm button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .activityList article {

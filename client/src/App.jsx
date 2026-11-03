@@ -1,6 +1,7 @@
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import AdminDashboard from "./pages/admin_dashboard/adminDashboard.jsx";
 import AdminIssues from "./pages/admin_issue/AdminIssues.jsx";
+import AdminUsers from "./pages/admin_users/AdminUsers.jsx";
 import EmployeeDashboard from "./pages/employee_dashboard/EmployeeDashboard.jsx";
 import EmployeeIssues from "./pages/employee_issues/Employee_issues.jsx";
 import EmployeeProfile from "./pages/profile/EmployeeProfile.jsx";
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/admin/dashboard", element: <AdminDashboard /> },
       { path: "/admin/issues", element: <AdminIssues /> },
+      { path: "/admin/users", element: <AdminUsers /> },
       { path: "/employee/dashboard", element: <EmployeeDashboard /> },
       { path: "/employee/issues", element: <EmployeeIssues /> },
       { path: "/employee/profile", element: <EmployeeProfile /> },

@@ -14,8 +14,7 @@ const employeeLinks = [
 const adminLinks = [
   { label: "Dashboard", icon: "▦", to: "/admin/dashboard", key: "dashboard" },
   { label: "All Issues", icon: "▤", to: "/admin/issues", key: "issues" },
-  { label: "Users", icon: "♙", href: "#dashboard", key: "users" },
-  { label: "Reports", icon: "▥", href: "#status-breakdown", key: "reports" },
+  { label: "Users", icon: "♙", to: "/admin/users", key: "users" },
 ];
 
 export default function Sidebar() {
@@ -27,13 +26,15 @@ export default function Sidebar() {
   const links = isAdmin ? adminLinks : employeeLinks;
   const activePage = pathname.endsWith("/issues")
     ? "issues"
-    : pathname.endsWith("/profile") || hash === "#profile"
-      ? "profile"
-      : hash === "#status-breakdown"
-        ? "reports"
-        : hash === "#recent-issues"
-          ? "issues"
-          : "dashboard";
+    : pathname.endsWith("/users")
+      ? "users"
+      : pathname.endsWith("/profile") || hash === "#profile"
+        ? "profile"
+        : hash === "#status-breakdown"
+          ? "reports"
+          : hash === "#recent-issues"
+            ? "issues"
+            : "dashboard";
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");

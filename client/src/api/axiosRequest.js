@@ -12,10 +12,11 @@ export const axiosRequest = (
   data = null,
   method = "GET",
   header = {},
-  options = {}
+  options = {},
 ) => {
   const accessToken = store.getState().control.accessToken;
-  store.dispatch({ type: API_REQUEST_STARTED });
+  const { skipLoader = false, ...axiosOptions } = options;
+  if (!skipLoader) store.dispatch({ type: API_REQUEST_STARTED });
 
   return axios({
     url: `${base_url}${url}`,
@@ -25,7 +26,7 @@ export const axiosRequest = (
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...header,
     },
-    ...options,
+    ...axiosOptions,
   })
     .then((response) => response.data)
     .catch((error) => {
@@ -36,6 +37,6 @@ export const axiosRequest = (
       throw error;
     })
     .finally(() => {
-      store.dispatch({ type: API_REQUEST_FINISHED });
+      if (!skipLoader) store.dispatch({ type: API_REQUEST_FINISHED });
     });
 };
