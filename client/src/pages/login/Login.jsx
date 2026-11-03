@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { axiosRequest } from "../../api/axiosRequest";
 import {
   AUTHENTICATED,
   SET_ACCESSTOKEN,
 } from "../../actions/controlActionTypes";
-import styles from "./Login.module.css";
+import styles from "./login.module.css";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,11 +15,9 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
     setLoading(true);
     try {
       const result = await axiosRequest(
@@ -56,8 +55,13 @@ export default function Login() {
         { replace: true },
       );
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      setError(message);
+      if (err.response?.status === 400) {
+        toast.error("Invalid credentials");
+      } else {
+        toast.error(
+          err.response?.data?.message || "Unable to sign in. Please try again.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -116,11 +120,6 @@ export default function Login() {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            {error && (
-              <p role="alert" className={styles.error}>
-                {error}
-              </p>
-            )}
             <button className={styles.submit} disabled={loading} type="submit">
               {loading ? "Signing in..." : "Sign in"}
             </button>

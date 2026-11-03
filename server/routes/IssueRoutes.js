@@ -20,7 +20,7 @@ route.get("/:id/comments", verifyToken, getIssueComments);
 route.post("/:id/comments", verifyToken, addIssueComment);
 route.delete("/:id/attachment", verifyToken, deleteIssueAttachment);
 route.get("/get-issue/:id", getIssueById);
-route.put("/update-issue/:id", updateIssue);
+route.put("/update-issue/:id", verifyToken, updateIssue);
 route.delete("/delete-issue/:id", deleteIssue);
 
 export default route;

@@ -1,8 +1,45 @@
+.issuesBody,
+:global(#employee-issues) > .issuesBody {
+  flex: 0 0 auto;
+  width: 100%;
+  overflow: visible;
+}
+
+:global(#employee-issues) {
+  display: flex;
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  overflow: visible;
+}
+
+:global([data-app-shell]:has(#employee-issues)) {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: visible;
+}
+
+:global(html:has(#employee-issues)),
+:global(body:has(#employee-issues)) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:global(html:has(#employee-issues)::-webkit-scrollbar),
+:global(body:has(#employee-issues)::-webkit-scrollbar) {
+  display: none;
+}
+
 .issuesBody {
+  display: flex;
+  flex-direction: column;
   padding-top: 21px;
 }
 
 .pageHeading {
+  flex: 0 0 auto;
   margin-bottom: 18px;
 }
 
@@ -15,6 +52,7 @@
 }
 
 .issueStats {
+  flex: 0 0 auto;
   gap: 13px;
   margin-bottom: 13px;
 }
@@ -53,7 +91,19 @@
   font-size: 23px;
 }
 
+:global(:root[data-theme="dark"]) .issueStats article p {
+  color: #fff;
+}
+
+:global(:root[data-theme="dark"]) .issueStats article strong {
+  color: #a986ff;
+}
+
 .issuesPanel {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 500px;
+  flex-direction: column;
   overflow: hidden;
   padding: 0 13px 10px;
   border: 1px solid #e8e8f0;
@@ -64,11 +114,12 @@
 
 .statusTabs {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   min-height: 45px;
   align-items: stretch;
   gap: 12px;
-  border-bottom: 1px solid #ededf3;
+  border-bottom: 0;
 }
 
 .statusTab {
@@ -110,6 +161,24 @@
   font-size: 13px;
 }
 
+.closedTabIcon {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  align-items: center;
+  justify-content: center;
+}
+
+.closedTabIcon svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
 .tabCircle {
   width: 14px;
   height: 14px;
@@ -119,6 +188,7 @@
 
 .tableToolbar {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -166,6 +236,14 @@
 .selectGroup {
   display: flex;
   gap: 9px;
+}
+
+.filterPopoverAnchor {
+  display: contents;
+}
+
+.filterToggle {
+  display: none;
 }
 
 .toolbarSelect {
@@ -217,39 +295,45 @@
 .tableFooter {
   display: flex;
   flex: 0 0 auto;
+  min-height: 34px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 8px 10px;
-  border-top: 1px solid #efedf5;
-  background: #fff;
-  color: #89889b;
+  border-top: 1px solid var(--theme-border-subtle, #efedf5);
+  background: var(--theme-surface-raised, #fff);
+  color: var(--theme-text-secondary, #89889b);
   font-size: 9px;
 }
 
 .issueWorkspace {
   display: grid;
+  flex: 0 0 auto;
   min-width: 0;
   max-width: 100%;
+  min-height: 430px;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(430px, auto);
   gap: 12px;
-  align-items: start;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
+  align-items: stretch;
+  overflow: visible;
 }
 
 .issueWorkspaceWithDetail {
   grid-template-columns: minmax(270px, 0.9fr) minmax(480px, 1.35fr);
 }
 
+.issueDetailContainer {
+  display: contents;
+}
+
 .issueListColumn {
   display: flex;
-  max-height: 68vh;
-  min-height: 180px;
+  min-height: 0;
   flex-direction: column;
   min-width: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
+  /* overscroll-behavior: contain; */
   scrollbar-color: #c9c1dc transparent;
   scrollbar-width: thin;
   border: 1px solid #efedf5;
@@ -280,10 +364,20 @@
 }
 
 .issueList {
-  display: grid;
-  flex: 0 0 auto;
-  gap: 6px;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  /* overscroll-behavior: contain; */
   padding: 7px;
+  scrollbar-color: #c9c1dc transparent;
+  scrollbar-width: thin;
+}
+
+.infiniteScrollContent {
+  display: grid;
+  min-height: 100%;
+  gap: 6px;
+  overflow: visible !important;
 }
 
 .issueListItem {
@@ -300,10 +394,14 @@
   text-align: left;
 }
 
-.issueListItem:hover,
+.issueListItem:hover {
+  border-color: var(--theme-selected-border, #7048d5);
+  background: var(--theme-surface, #fff);
+}
+
 .selectedIssue {
-  border-color: #d7c9f5;
-  background: #f7f3ff;
+  border-color: var(--theme-selected-border, #7048d5);
+  background: var(--theme-selected, #f7f3ff);
 }
 
 .issueListTop {
@@ -374,13 +472,6 @@
   margin: 0;
   font-size: 10px;
   line-height: 1.5;
-}
-
-@media (max-width: 520px) {
-  .tableFooter {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
 
 .visuallyHidden {
@@ -526,15 +617,51 @@
 @media (max-width: 900px) {
   .issueWorkspace {
     grid-template-columns: minmax(0, 1fr);
-    overflow-x: clip;
-  }
-
-  .issueListColumn {
-    max-height: 62vh;
+    overflow: visible;
   }
 
   .issueWorkspaceWithDetail {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .issueDetailContainer {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: max(24px, env(safe-area-inset-top)) 0 0;
+    background: rgb(10 10 16 / 62%);
+  }
+
+  .issueDetailContainer > aside {
+    margin-top: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    flex: 0 0 auto;
+    overflow: visible;
+    border-radius: 14px 14px 0 0;
+    animation: employeeIssueSheetIn 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes employeeIssueSheetIn {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 900px) {
+  .issueDetailContainer > aside {
+    animation-duration: 1ms;
   }
 }
 
@@ -560,19 +687,30 @@
   }
 
   .statusTabs {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
     gap: 3px;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .statusTabs::-webkit-scrollbar {
+    display: none;
   }
 
   .statusTab {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     padding-right: 9px;
     padding-left: 9px;
   }
 
   .tableToolbar {
-    align-items: stretch;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
     gap: 9px;
   }
 
@@ -580,9 +718,52 @@
     width: 100%;
   }
 
-  .selectGroup {
+  .filterPopoverAnchor {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .filterToggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    width: 40px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid var(--theme-border-strong, #dedeea);
+    border-radius: 8px;
+    background: var(--theme-surface-input, #fff);
+    color: var(--theme-text, #39384f);
+    cursor: pointer;
+  }
+
+  .filterToggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  .selectGroup {
+    display: none;
+  }
+
+  .selectGroupOpen {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 31;
+    display: grid;
+    width: min(320px, calc(100vw - 32px));
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--theme-border, #e8e8f0);
+    border-radius: 12px;
+    background: var(--theme-surface, #fff);
+    box-shadow: 0 18px 48px rgb(22 16 44 / 24%);
   }
 
   .toolbarSelect {
@@ -652,5 +833,15 @@
 
 .selectedIssue {
   border-color: var(--theme-selected-border, #7855cf);
-  background: var(--theme-selected, #242033);
+  background: var(--theme-selected, #29213d);
+}
+
+.listHeading {
+  border-bottom-color: var(--theme-border-subtle, #30313b);
+  background: var(--theme-surface-raised, #111217);
+  color: var(--theme-text-secondary, #aaa9b8);
+}
+
+.listHeading strong {
+  color: var(--theme-text, #eeedf4);
 }

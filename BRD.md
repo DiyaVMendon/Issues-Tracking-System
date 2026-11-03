@@ -36,10 +36,11 @@ The system consists of a React/Vite single-page client and a Node.js/Express API
 
 ### Status and URLs
 
-- **Deployment status:** Not deployed; no live deployment URL or Git remote was found in the repository.
-- **Frontend URL:** Pending deployment.
-- **API URL:** Pending deployment.
-- **Recommended deployment:** Vercel for the static client and Render (or an equivalent Node.js web-service platform) for the API.
+- **Deployment status:** Deployed on Vercel.
+- **Frontend URL:** [https://issues-tracking-system.vercel.app/](https://issues-tracking-system.vercel.app/)
+- **API base URL:** [https://issuetracker-api.vercel.app/api](https://issuetracker-api.vercel.app/api)
+- **Source repository:** [DiyaVMendon/Issues-Tracking-System](https://github.com/DiyaVMendon/Issues-Tracking-System)
+- **Hosting platform:** Vercel hosts the frontend and API as separate projects.
 
 ### Required services
 
@@ -49,16 +50,14 @@ The system consists of a React/Vite single-page client and a Node.js/Express API
 - Gmail SMTP credentials using an app password if password-reset email is enabled.
 - Frontend and API hosting with HTTPS.
 
-### Initial deployment approach
+### Deployment approach
 
-1. Deploy the API from the `server/` directory with `node local.js` as the start command.
-2. Configure API environment variables: `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, Cloudinary credentials, and optional Gmail credentials.
-3. Deploy the client from `client/`, building with `npm run build` and publishing `dist`.
-4. Set client `VITE_API_URL` to the deployed API origin plus `/api`.
-5. Configure SPA route fallback, production CORS, and secure authorization checks before public release.
-6. Smoke-test authentication, role-specific access, issue updates, comments, and image operations.
-7. Update the frontend and API URLs in both this document and `README.md` after deployment.
+1. Deploy the frontend from the `client/` directory on Vercel, using `npm run build` and `dist` as the output directory.
+2. Deploy the API from the `server/` directory on Vercel.
+3. Configure the frontend environment variable `VITE_API_URL=https://issuetracker-api.vercel.app/api`.
+4. Configure API environment variables in Vercel: `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, Cloudinary credentials, and optional Gmail credentials.
+5. Ensure MongoDB Atlas is reachable from the API, production CORS allows the frontend origin, and HTTPS is enabled.
+6. Push changes to the connected GitHub branch or trigger a Vercel deployment. Redeploy the relevant project when its code or environment variables change.
+7. Review deployment logs and smoke-test authentication, role access, issue updates, comments, image operations, and SPA deep links.
 
-### Updating a deployment
-
-Push approved changes to the connected deployment branch, verify provider environment variables, redeploy the affected service, inspect build/runtime logs, and smoke-test the deployed application. Database migrations or manual data changes must be reviewed and backed up before execution.
+Update the URLs in this Deployment section and in `README.md` if the Vercel domains change. Verify provider environment variables on every deployment; never commit secrets. Review and back up the database before manual data changes.

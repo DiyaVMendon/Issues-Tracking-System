@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
+import InfiniteScrollLoader from "../../components/InfiniteScrollLoader";
+import {
+  deduplicatedRequest,
+  mergeItemsById,
+} from "../../api/deduplicatedRequest";
 import AssetIcon from "../../components/AssetIcon";
+import OutsideAlerter from "../../components/OutsideAlerter";
 import crownIcon from "../../assets/icons/crown.svg";
-import notificationIcon from "../../assets/icons/notification.svg";
 import trashIcon from "../../assets/icons/trash.svg";
 import userGroupIcon from "../../assets/icons/user-group.svg";
+import userProfileIcon from "../../assets/icons/user-profile.svg";
 import UserDropdown from "../userDropdown/userDropdown";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
 import styles from "./admin_users.module.css";
@@ -34,15 +41,45 @@ const selectStyles = {
   control: (base, state) => ({
     ...base,
     minHeight: 36,
-    borderColor: state.isFocused ? "#8c69e2" : "#dedeea",
+    borderColor: state.isFocused
+      ? "#8c69e2"
+      : "var(--theme-border-strong, #dedeea)",
     borderRadius: 8,
+    backgroundColor: "var(--theme-surface-input, #fff)",
+    color: "var(--theme-text, #39384f)",
     boxShadow: state.isFocused ? "0 0 0 3px rgb(112 72 213 / 10%)" : "none",
     cursor: "pointer",
     fontSize: 11,
   }),
+  singleValue: (base) => ({
+    ...base,
+    color: "var(--theme-text, #39384f)",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "var(--theme-text-secondary, #77768c)",
+  }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    color: "var(--theme-text-secondary, #77768c)",
+  }),
   indicatorSeparator: () => ({ display: "none" }),
   menuPortal: (base) => ({ ...base, zIndex: 10020 }),
-  menu: (base) => ({ ...base, zIndex: 10020 }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 10020,
+    backgroundColor: "var(--theme-surface-raised, #fff)",
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#7048d5"
+      : state.isFocused
+        ? "var(--theme-hover, #f3edff)"
+        : "var(--theme-surface-raised, #fff)",
+    color: state.isSelected ? "#fff" : "var(--theme-text, #39384f)",
+    cursor: "pointer",
+  }),
 };
 
 const getUserRole = (user) =>
@@ -76,6 +113,7 @@ export default function AdminUsers() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [modalMode, setModalMode] = useState("");
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -83,8 +121,15 @@ export default function AdminUsers() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const loadMoreRef = useRef(null);
   const loadingMoreRef = useRef(false);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setFiltersOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(
@@ -97,7 +142,10 @@ export default function AdminUsers() {
   useEffect(() => {
     let active = true;
     const loadUsers = async () => {
-      setLoading(true);
+      if (page === 1) {
+        loadingMoreRef.current = false;
+        setLoading(true);
+      }
       setError("");
       const params = new URLSearchParams({
         page: String(page),
@@ -107,14 +155,18 @@ export default function AdminUsers() {
         status: statusFilter,
       });
       try {
-        const response = await axiosRequest(`/auth/users/manage?${params}`);
+        const response = await deduplicatedRequest(
+          `/auth/users/manage?${params}`,
+          { skipLoader: page > 1 },
+        );
         if (!active) return;
         const nextUsers = Array.isArray(response.data) ? response.data : [];
         setUsers((current) => {
-          if (page === 1) return nextUsers;
-          const merged = new Map(current.map((user) => [String(user._id), user]));
-          nextUsers.forEach((user) => merged.set(String(user._id), user));
-          return Array.from(merged.values());
+          return mergeItemsById(
+            page === 1 ? [] : current,
+            nextUsers,
+            (user) => user._id || user.id,
+          );
         });
         setSummary(response.summary || { total: 0, admins: 0, employees: 0 });
         setPagination(response.pagination || {
@@ -131,7 +183,7 @@ export default function AdminUsers() {
         if (page === 1) setUsers([]);
       } finally {
         if (active) {
-          setLoading(false);
+          if (page === 1) setLoading(false);
           loadingMoreRef.current = false;
         }
       }
@@ -143,26 +195,12 @@ export default function AdminUsers() {
     };
   }, [debouncedSearch, page, refreshKey, roleFilter, statusFilter]);
 
-  useEffect(() => {
-    const sentinel = loadMoreRef.current;
-    if (!sentinel || typeof IntersectionObserver === "undefined") return undefined;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          pagination.hasNextPage &&
-          !loading &&
-          !loadingMoreRef.current
-        ) {
-          loadingMoreRef.current = true;
-          setPage((current) => current + 1);
-        }
-      },
-      { rootMargin: "160px" },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loading, pagination.hasNextPage]);
+  const loadMoreUsers = () => {
+    if (!loading && !loadingMoreRef.current && pagination.hasNextPage) {
+      loadingMoreRef.current = true;
+      setPage((current) => current + 1);
+    }
+  };
 
   const changeFilters = (change) => {
     loadingMoreRef.current = false;
@@ -310,14 +348,6 @@ export default function AdminUsers() {
           IssueTracker
         </div>
         <div className={dashboardStyles.topbarSpacer} />
-        <button
-          className={dashboardStyles.notificationButton}
-          type="button"
-          aria-label="Notifications"
-        >
-          <AssetIcon src={notificationIcon} />
-          <span className={dashboardStyles.notificationDot} />
-        </button>
         <UserDropdown />
       </header>
 
@@ -377,119 +407,171 @@ export default function AdminUsers() {
                 }}
               />
             </label>
-            <Select
-              aria-label="Filter by role"
-              className={styles.filterSelect}
-              classNamePrefix="users-select"
-              isSearchable={false}
-              menuPortalTarget={document.body}
-              options={roleOptions}
-              styles={selectStyles}
-              value={roleOptions.find((option) => option.value === roleFilter)}
-              onChange={(option) => changeFilters({ role: option?.value || "all" })}
-            />
-            <Select
-              aria-label="Filter by status"
-              className={styles.filterSelect}
-              classNamePrefix="users-select"
-              isSearchable={false}
-              menuPortalTarget={document.body}
-              options={statusOptions}
-              styles={selectStyles}
-              value={statusOptions.find((option) => option.value === statusFilter)}
-              onChange={(option) => changeFilters({ status: option?.value || "all" })}
-            />
+            <OutsideAlerter
+              className={styles.filterPopoverAnchor}
+              enabled={filtersOpen}
+              ignoreSelector=".users-select__menu-portal"
+              onOutsideClick={() => setFiltersOpen(false)}
+            >
+              <button
+                className={styles.filterToggle}
+                type="button"
+                aria-label="Toggle user filters"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((open) => !open)}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 5h16l-6.2 7.1v5.1l-3.6 1.8v-6.9L4 5Z" />
+                </svg>
+              </button>
+              <div
+                className={`${styles.filterControls} ${filtersOpen ? styles.filterControlsOpen : ""}`}
+                role={filtersOpen ? "dialog" : undefined}
+                aria-labelledby={filtersOpen ? "user-filter-title" : undefined}
+              >
+                <div className={styles.filterModalHeading}>
+                  <h2 id="user-filter-title">Filter users</h2>
+                  <button
+                    type="button"
+                    aria-label="Close filters"
+                    onClick={() => setFiltersOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <Select
+                  aria-label="Filter by role"
+                  className={styles.filterSelect}
+                  classNamePrefix="users-select"
+                  isSearchable={false}
+                  menuPortalTarget={document.body}
+                  options={roleOptions}
+                  styles={selectStyles}
+                  value={roleOptions.find((option) => option.value === roleFilter)}
+                  onChange={(option) => changeFilters({ role: option?.value || "all" })}
+                />
+                <Select
+                  aria-label="Filter by status"
+                  className={styles.filterSelect}
+                  classNamePrefix="users-select"
+                  isSearchable={false}
+                  menuPortalTarget={document.body}
+                  options={statusOptions}
+                  styles={selectStyles}
+                  value={statusOptions.find((option) => option.value === statusFilter)}
+                  onChange={(option) => changeFilters({ status: option?.value || "all" })}
+                />
+              </div>
+            </OutsideAlerter>
           </div>
 
-          <div className={styles.usersTable} role="table" aria-label="System users">
-            <div className={styles.usersTableHeader} role="row">
-              <div role="columnheader">#</div>
-              <div role="columnheader">Name</div>
-              <div role="columnheader">Email</div>
-              <div role="columnheader">Role</div>
-              <div role="columnheader">Status</div>
-              <div role="columnheader">Joined On</div>
-              <div role="columnheader">Actions</div>
-            </div>
-            <div role="rowgroup">
-              {users.map((user, index) => {
-                const role = getUserRole(user);
-                const active = user.isActive !== false;
-                return (
-                  <div
-                    className={styles.userRow}
-                    key={user._id}
-                    role="row"
-                    aria-rowindex={index + 2}
-                  >
-                    <div role="cell">{(page - 1) * 10 + index + 1}</div>
-                    <div role="cell">
-                      <div className={styles.nameCell}>
-                        <span className={styles.userAvatar}>
-                          {user.name?.trim().charAt(0).toUpperCase() || "?"}
-                        </span>
-                        <strong>{user.name}</strong>
-                      </div>
-                    </div>
-                    <div className={styles.emailCell} role="cell">{user.email}</div>
-                    <div role="cell">
-                      <span className={`${styles.roleBadge} ${styles[role]}`}>
-                        ♙ {role === "admin" ? "Admin" : "Employee"}
-                      </span>
-                    </div>
-                    <div role="cell">
-                      <span className={`${styles.statusBadge} ${active ? styles.active : styles.inactive}`}>
-                        <i /> {active ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                    <div role="cell">{formatDate(user.createdAt)}</div>
-                    <div role="cell">
-                      <div className={styles.actions}>
-                        <button
-                          type="button"
-                          aria-label={`Edit ${user.name}`}
-                          onClick={() => openEdit(user)}
-                        >
-                          ✎
-                        </button>
-                        <button
-                          className={styles.deleteAction}
-                          type="button"
-                          aria-label={`Delete ${user.name}`}
-                          disabled={String(user._id) === String(userId)}
-                          onClick={() => setDeleteTarget(user)}
-                        >
-                          <AssetIcon src={trashIcon} size={12} />
-                        </button>
-                      </div>
-                    </div>
+          <div className={styles.usersListScroll} id="admin-users-list-scroll">
+            <InfiniteScroll
+              className={styles.usersTable}
+              dataLength={users.length}
+              hasMore={Boolean(pagination.hasNextPage)}
+              loader={
+                <div className={styles.infiniteScrollLoaderRow} role="row">
+                  <div role="cell" aria-colspan="7">
+                    <InfiniteScrollLoader label="Loading more users…" />
                   </div>
-                );
-              })}
-              {loading && users.length === 0 && (
-                <div className={styles.tableMessage} role="row">
-                  <div role="cell" aria-colspan="7">Loading users…</div>
+                </div>
+              }
+              next={loadMoreUsers}
+              scrollThreshold="160px"
+              scrollableTarget="admin-users-list-scroll"
+              role="table"
+              aria-label="System users"
+            >
+              {users.length > 0 && (
+                <div className={styles.usersTableHeader} role="row">
+                  <div role="columnheader">#</div>
+                  <div role="columnheader">Name</div>
+                  <div role="columnheader">Email</div>
+                  <div role="columnheader">Role</div>
+                  <div role="columnheader">Status</div>
+                  <div role="columnheader">Joined On</div>
+                  <div role="columnheader">Actions</div>
                 </div>
               )}
-              {!loading && users.length === 0 && (
-                <div className={styles.tableMessage} role="row">
-                  <div role="cell" aria-colspan="7">No users match these filters.</div>
-                </div>
-              )}
-            </div>
+              <div role="rowgroup">
+                {users.map((user, index) => {
+                  const role = getUserRole(user);
+                  const active = user.isActive !== false;
+                  return (
+                    <div
+                      className={styles.userRow}
+                      key={user._id}
+                      role="row"
+                      aria-rowindex={index + 2}
+                    >
+                      <div role="cell">{index + 1}</div>
+                      <div role="cell">
+                        <div className={styles.nameCell}>
+                          <span className={styles.userAvatar}>
+                            {user.name?.trim().charAt(0).toUpperCase() || "?"}
+                          </span>
+                          <strong>{user.name}</strong>
+                        </div>
+                      </div>
+                      <div className={styles.emailCell} role="cell">{user.email}</div>
+                      <div role="cell">
+                        <span className={`${styles.roleBadge} ${styles[role]}`}>
+                          ♙ {role === "admin" ? "Admin" : "Employee"}
+                        </span>
+                      </div>
+                      <div role="cell">
+                        <span className={`${styles.statusBadge} ${active ? styles.active : styles.inactive}`}>
+                          <i /> {active ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                      <div role="cell">{formatDate(user.createdAt)}</div>
+                      <div role="cell">
+                        <div className={styles.actions}>
+                          <button
+                            type="button"
+                            aria-label={`Edit ${user.name}`}
+                            onClick={() => openEdit(user)}
+                          >
+                            ✎
+                          </button>
+                          <button
+                            className={styles.deleteAction}
+                            type="button"
+                            aria-label={`Delete ${user.name}`}
+                            disabled={String(user._id) === String(userId)}
+                            onClick={() => setDeleteTarget(user)}
+                          >
+                            <AssetIcon src={trashIcon} size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {loading && users.length === 0 && (
+                  <div className={styles.tableMessage} role="row">
+                    <div role="cell" aria-colspan="7">Loading users…</div>
+                  </div>
+                )}
+                {!loading && users.length === 0 && (
+                  <div className={`${styles.tableMessage} ${styles.emptyUsersMessage}`} role="row">
+                    <div role="cell" aria-colspan="7">No users found</div>
+                  </div>
+                )}
+              </div>
+            </InfiniteScroll>
           </div>
-          <div className={styles.tableFooter}>
-            <span>Showing {users.length} of {pagination.total} users</span>
-            <span ref={loadMoreRef} aria-live="polite">
-              {loading && users.length > 0
-                ? "Loading more users…"
-                : pagination.hasNextPage
+          {users.length > 0 && (
+            <div className={styles.tableFooter}>
+              <span>Showing {users.length} of {pagination.total} users</span>
+              <span aria-live="polite">
+                {pagination.hasNextPage
                   ? "Scroll to load more"
-                  : users.length > 0
-                    ? "All users loaded"
-                    : ""}
-            </span>
-          </div>
+                  : "All users loaded"}
+              </span>
+            </div>
+          )}
         </section>
       </div>
 
@@ -515,7 +597,13 @@ export default function AdminUsers() {
               <button type="button" aria-label="Close dialog" onClick={closeForm} disabled={saving}>×</button>
             </header>
             <form className={styles.userForm} onSubmit={submitForm}>
-              <div className={styles.formAvatar}>{form.name.trim().charAt(0).toUpperCase() || "?"}</div>
+              <div className={styles.formAvatar} aria-hidden="true">
+                {form.name.trim() ? (
+                  form.name.trim().charAt(0).toUpperCase()
+                ) : (
+                  <AssetIcon src={userProfileIcon} size={24} />
+                )}
+              </div>
               <label>
                 <span>Full Name <b>*</b></span>
                 <input

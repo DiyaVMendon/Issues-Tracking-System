@@ -1,15 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { axiosRequest } from "../../api/axiosRequest";
-import AssetIcon from "../../components/AssetIcon";
+import InfiniteScroll from "react-infinite-scroll-component";
+import InfiniteScrollLoader from "../../components/InfiniteScrollLoader";
+import {
+  deduplicatedRequest,
+  mergeItemsById,
+} from "../../api/deduplicatedRequest";
 import IssueStatCards from "../admin_dashboard/IssueStatCards";
 import assignedIssuesIcon from "../../assets/icons/assigned-issues.svg";
 import closedIssueIcon from "../../assets/icons/issue-closed.svg";
 import openIssueIcon from "../../assets/icons/issue-open.svg";
 import progressIssueIcon from "../../assets/icons/issue-progress.svg";
-import notificationIcon from "../../assets/icons/notification.svg";
 import UserDropdown from "../userDropdown/userDropdown";
 import styles from "../admin_dashboard/admin_dashboard.module.css";
+import { ClipboardList } from "lucide-react";
 
 const issueStatuses = [
   { key: "open", label: "Open", color: "var(--status-open)" },
@@ -47,6 +51,9 @@ export default function EmployeeDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ hasNextPage: false });
+  const loadingMoreRef = useRef(false);
 
   useEffect(() => {
     if (!localStorage.getItem("accessToken")) {
@@ -56,27 +63,42 @@ export default function EmployeeDashboard() {
 
     let active = true;
     const fetchIssues = async () => {
+      if (page === 1) setLoading(true);
+      setError("");
       try {
-        const response = await axiosRequest(
-          "/issues?page=1&limit=5&sort=newest",
+        const response = await deduplicatedRequest(
+          `/issues?page=${page}&limit=5&sort=newest`,
+          { skipLoader: page > 1 },
         );
         if (active) {
-          setIssues(Array.isArray(response.data) ? response.data : []);
+          const nextIssues = Array.isArray(response.data) ? response.data : [];
+          setIssues((currentIssues) => {
+            return mergeItemsById(
+              page === 1 ? [] : currentIssues,
+              nextIssues,
+              (issue) => issue._id || issue.id || `${issue.issue_title}-${issue.createdAt}`,
+            );
+          });
           setSummary(response.summary || {
             total: 0,
             open: 0,
             inProgress: 0,
             closed: 0,
           });
+          setPagination(response.pagination || { hasNextPage: false });
         }
       } catch (requestError) {
         if (!active) return;
+        setPagination({ hasNextPage: false });
         setError(
           requestError.response?.data?.message ||
             "Could not load your assigned issues. Please try again.",
         );
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          if (page === 1) setLoading(false);
+          else loadingMoreRef.current = false;
+        }
       }
     };
 
@@ -84,10 +106,20 @@ export default function EmployeeDashboard() {
     return () => {
       active = false;
     };
-  }, [navigate]);
+  }, [navigate, page]);
 
   const counts = summary;
   const displayedIssues = issues;
+  const loadMoreIssues = () => {
+    if (
+      !loading &&
+      !loadingMoreRef.current &&
+      pagination.hasNextPage
+    ) {
+      loadingMoreRef.current = true;
+      setPage((current) => current + 1);
+    }
+  };
   const statCards = [
     { label: "Assigned Issues", value: summary.total, icon: assignedIssuesIcon, variant: "totalCard" },
     { label: "Open", value: counts.open, icon: openIssueIcon, variant: "openCard" },
@@ -104,26 +136,18 @@ export default function EmployeeDashboard() {
   const userName = localStorage.getItem("userName") || "there";
 
   return (
-    <section className={styles.mainContent} id="employee-dashboard">
+    <section className={`${styles.mainContent} ${styles.page}`} id="employee-dashboard">
         <header className={styles.topbar} id="profile">
           <div className={styles.mobileBrand}>
             <span className={styles.brandMark}>◆</span>
             IssueTracker
           </div>
           <div className={styles.topbarSpacer} />
-          <button
-            className={styles.notificationButton}
-            type="button"
-            aria-label="Notifications"
-          >
-            <AssetIcon src={notificationIcon} />
-            <span className={styles.notificationDot} />
-          </button>
           <UserDropdown />
         </header>
 
-        <div className={styles.dashboardBody}>
-          <div className={styles.pageHeading}>
+        <div className={`${styles.dashboardBody} ${styles.noPageScrollbar} ${styles.body}`}>
+          <div className={`${styles.pageHeading} ${styles.heading}`}>
             <div>
               <p className={styles.eyebrow}>YOUR WORKSPACE</p>
               <h1>My Dashboard</h1>
@@ -149,24 +173,26 @@ export default function EmployeeDashboard() {
             </div>
           )}
 
+          <div className={styles.statsWrap}>
           <IssueStatCards
             items={statCards}
             loading={loading}
             styles={styles}
             label="Your issue summary"
           />
+          </div>
 
-          <section className={styles.detailGrid}>
-            <article className={styles.panel}>
+          <section className={`${styles.detailGrid} ${styles.details}`}>
+            <article className={`${styles.panel} ${styles.chartPanel}`}>
               <div className={styles.panelHeading}>
                 <div>
                   <h2>My Issues by Status</h2>
                   <p>Your assigned issue progress</p>
                 </div>
               </div>
-              <div className={styles.statusContent}>
+              <div className={`${styles.statusContent} ${styles.chartContent}`}>
                 <div
-                  className={styles.donutChart}
+                  className={`${styles.donutChart} ${styles.donut}`}
                   style={chartStyle}
                   role="img"
                   aria-label={`${counts.open} open, ${counts.inProgress} in progress, ${counts.closed} closed`}
@@ -176,7 +202,7 @@ export default function EmployeeDashboard() {
                     <span>Issues</span>
                   </div>
                 </div>
-                <ul className={styles.legend}>
+                <ul className={`${styles.legend} ${styles.legend}`}>
                   {issueStatuses.map(({ key, label, color }, index) => (
                     <li key={key}>
                       <span className={styles.legendLabel}>
@@ -193,7 +219,7 @@ export default function EmployeeDashboard() {
               </div>
             </article>
 
-            <article className={`${styles.panel} ${styles.recentPanel}`} id="my-issues">
+            <article className={`${styles.panel} ${styles.recentPanel} ${styles.recentPanel}`} id="my-issues">
               <div className={styles.panelHeading}>
                 <div>
                   <h2>Recently Assigned</h2>
@@ -211,38 +237,49 @@ export default function EmployeeDashboard() {
               {loading ? (
                 <p className={styles.tableMessage}>Loading your issues…</p>
               ) : displayedIssues.length ? (
-                <div className={styles.issueList}>
-                  {displayedIssues.map((issue) => {
-                    const statusKey = getStatusKey(issue.status);
-                    return (
-                      <div
-                        className={styles.issueRow}
-                        key={issue._id || issue.id || issue.issue_title}
-                      >
-                        <span className={styles.issueId}>{getIssueId(issue)}</span>
-                        <span
-                          className={styles.issueTitle}
-                          title={issue.issue_title}
+                <div className={styles.recentIssuesScroll} id="employee-recent-issues-scroll">
+                  <InfiniteScroll
+                    className={styles.issueList}
+                    dataLength={displayedIssues.length}
+                    hasMore={Boolean(pagination.hasNextPage)}
+                    loader={<InfiniteScrollLoader label="Loading more issues…" />}
+                    next={loadMoreIssues}
+                    scrollThreshold="120px"
+                    scrollableTarget="employee-recent-issues-scroll"
+                  >
+                    {displayedIssues.map((issue) => {
+                      const statusKey = getStatusKey(issue.status);
+                      return (
+                        <div
+                          className={styles.issueRow}
+                          key={issue._id || issue.id || issue.issue_title}
                         >
-                          {issue.issue_title || "Untitled issue"}
-                        </span>
-                        <span
-                          className={`${styles.statusBadge} ${styles[statusKey]}`}
-                        >
-                          {formatStatus(issue.status)}
-                        </span>
-                      </div>
-                    );
-                  })}
+                          <span className={styles.issueId}>{getIssueId(issue)}</span>
+                          <span
+                            className={styles.issueTitle}
+                            title={issue.issue_title}
+                          >
+                            {issue.issue_title || "Untitled issue"}
+                          </span>
+                          <span
+                            className={`${styles.statusBadge} ${styles[statusKey]}`}
+                          >
+                            {formatStatus(issue.status)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </InfiniteScroll>
                 </div>
               ) : (
-                <p className={styles.tableMessage}>
-                  No issues are assigned to you yet.
-                </p>
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyIcon}><ClipboardList size={32} strokeWidth={1.6} /></div>
+                  <p>No issues are assigned to you yet.</p>
+                </div>
               )}
             </article>
           </section>
-          <footer className={styles.footer}>
+          <footer className={`${styles.footer} ${styles.footer}`}>
             IssueTracker <span>·</span> Employee workspace
           </footer>
         </div>

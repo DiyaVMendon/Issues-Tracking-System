@@ -1,0 +1,41 @@
+.loader {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 8px auto;
+  padding: 0 14px;
+  border: 1px solid var(--theme-border-strong, #dedeea);
+  border-radius: 7px;
+  background: var(--theme-surface-raised, #fff);
+  color: var(--theme-text-secondary, #77768c);
+  font: inherit;
+  font-size: 10px;
+  cursor: wait;
+}
+
+.loader:disabled {
+  opacity: 1;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: infiniteScrollSpin 0.7s linear infinite;
+}
+
+@keyframes infiniteScrollSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.8s;
+  }
+}

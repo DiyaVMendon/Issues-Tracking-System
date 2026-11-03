@@ -11,6 +11,21 @@
   box-shadow: 0 5px 16px rgb(39 37 72 / 4%);
 }
 
+.adminDetailPanel {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #9c91bb transparent;
+  scrollbar-width: thin;
+}
+
+.employeeDetailPanel {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
 .panelHeader {
   display: flex;
   align-items: flex-start;
@@ -57,10 +72,10 @@
   justify-content: center;
   gap: 5px;
   padding: 0 9px;
-  border: 1px solid #dedbe9;
+  border: 1px solid var(--theme-border-strong, #dedbe9);
   border-radius: 7px;
-  background: #fff;
-  color: #46435d;
+  background: var(--theme-surface-raised, #fff);
+  color: var(--theme-text-secondary, #46435d);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
@@ -68,14 +83,14 @@
 }
 
 .editButton {
-  color: #6334cb;
+  color: var(--theme-hover-text, #6334cb);
 }
 
 .editButton:hover,
 .iconButton:hover,
 .closeButton:hover {
-  border-color: #9e86e3;
-  background: #faf8ff;
+  border-color: var(--theme-selected-border, #9e86e3);
+  background: var(--theme-hover, #faf8ff);
 }
 
 .iconButton {
@@ -85,11 +100,12 @@
 }
 
 .closeButton {
-  width: 28px;
-  min-height: 28px;
+  width: 32px;
+  min-height: 32px;
   padding: 0;
   border: 0;
-  font-size: 20px;
+  border-radius: 50%;
+  font-size: 23px;
 }
 
 .menuWrap {
@@ -273,7 +289,8 @@
 }
 
 .detailContent {
-  padding: 12px 3px;
+  margin: 10px 0;
+  padding: 0;
 }
 
 .detailContent h3 {
@@ -425,10 +442,11 @@
 
 .commentsSection {
   display: flex;
-  min-height: 160px;
-  flex: 1;
+  min-width: 0;
+  flex: 0 0 auto;
   flex-direction: column;
-  gap: 9px;
+  gap: 12px;
+  margin-bottom: 8px;
   padding: 10px 0 0;
 }
 
@@ -436,8 +454,7 @@
   display: grid;
   align-content: start;
   gap: 8px;
-  max-height: 260px;
-  overflow-y: auto;
+  min-width: 0;
   padding: 2px 3px;
 }
 
@@ -467,7 +484,7 @@
   flex: 1;
   padding: 6px 9px;
   border-radius: 7px;
-  background: #f3f2f8;
+  background: var(--theme-surface-inset, #f3f2f8);
 }
 
 .commentMeta {
@@ -479,19 +496,19 @@
 }
 
 .commentMeta strong {
-  color: #38354d;
+  color: var(--theme-text, #38354d);
   font-size: 10px;
 }
 
 .commentMeta time {
-  color: #858399;
+  color: var(--theme-text-secondary, #858399);
   font-size: 8px;
 }
 
 .commentBody p {
   overflow-wrap: anywhere;
   margin: 0;
-  color: #55536b;
+  color: var(--theme-text-tertiary, #55536b);
   font-size: 10px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -499,10 +516,12 @@
 
 .commentForm {
   display: flex;
+  min-width: 0;
   align-items: stretch;
   gap: 6px;
+  margin-top: 3px;
   padding: 5px;
-  border: 1px solid #e8e5f0;
+  border: 1px solid var(--theme-border-subtle, #e8e5f0);
   border-radius: 8px;
 }
 
@@ -571,19 +590,19 @@
 }
 
 .activityList strong {
-  color: #38354d;
+  color: var(--theme-text, #38354d);
   font-size: 10px;
 }
 
 .activityList time {
-  color: #858399;
+  color: var(--theme-text-secondary, #858399);
   font-size: 8px;
 }
 
 .activityList p {
   grid-column: 1 / -1;
   margin: 0;
-  color: #55536b;
+  color: var(--theme-text-secondary, #55536b);
   font-size: 9px;
 }
 
@@ -598,10 +617,30 @@
 
 .employeeActions label {
   display: grid;
+  min-width: 0;
   gap: 5px;
   color: #77758b;
   font-size: 9px;
   font-weight: 650;
+}
+
+.employeeActions input[type="date"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--theme-border-strong, #dedeea);
+  border-radius: 7px;
+  background: var(--theme-surface-input, #fff);
+  color: var(--theme-text, #39364e);
+  font: inherit;
+  color-scheme: light;
+}
+
+.employeeActions input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.75;
 }
 
 .saveButton {
@@ -615,6 +654,11 @@
   font: inherit;
   font-size: 10px;
   font-weight: 700;
+}
+
+.employeeActions .saveButton {
+  grid-column: 1 / -1;
+  justify-self: end;
 }
 
 .saveButton:disabled {
@@ -656,6 +700,14 @@
   color: var(--theme-text, #eeedf4);
 }
 
+:global(:root[data-theme="dark"]) .employeeActions input[type="date"] {
+  color-scheme: dark;
+}
+
+:global(:root[data-theme="dark"]) .activityList article {
+  background: var(--theme-surface-inset, #1d1e26);
+}
+
 .panelHeader,
 .detailTabs,
 .comment {
@@ -669,10 +721,55 @@
   color: var(--theme-text, #eeedf4);
 }
 
-.metadataField,
 .attachment,
-.commentForm textarea {
+.commentForm textarea,
+.commentBody {
   border-color: var(--theme-border-subtle, #30313b);
   background: var(--theme-surface-inset, #1d1e26);
   color: var(--theme-text, #e8e7ee);
+}
+
+:global(:root[data-theme="dark"]) .detailContent h3 {
+  color: #7048d5;
+}
+
+@media (max-width: 900px) {
+  .panelHeader {
+    position: static;
+    padding-top: 22px;
+  }
+
+  .headerActions {
+    position: static;
+  }
+
+  .closeButton {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+  }
+
+  .adminDetailPanel {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    flex: 0 0 auto;
+    overflow: visible;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    animation: issueSheetEnter 220ms ease-out;
+  }
+
+  @keyframes issueSheetEnter {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
 }

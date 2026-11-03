@@ -405,24 +405,47 @@ export const deleteIssueAttachment = async (req, res) => {
 };
 
 export const updateIssue = async (req, res) => {
-    try{
-        const {id} = req.params;
-        const { issue_title, description, priority, status, assigned_to, due_date } = req.body;
-
-        const issue = await IssuesModel.findByIdAndUpdate(
-            id,
-            { issue_title, description, priority, status, assigned_to, due_date },
-            { new: true }
-        ).populate("assigned_to", "name");
-
-        if (!issue) {
-            return res.status(404).json({ message: "Issue not found" });
-        }
-
-        res.status(200).json({ message: "Issue updated successfully", data: issue });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const user = await User.findById(req.user?.id).select("role");
+    if (!user) {
+      return res.status(401).json({ message: "Authenticated user no longer exists." });
     }
+
+    const issue = await getAccessibleIssue(req, res);
+    if (!issue) return;
+
+    const { issue_title, description, priority, status, assigned_to, due_date } = req.body;
+    const isAdmin = user.role?.toLowerCase() === "admin";
+    if (
+      !isAdmin &&
+      assigned_to !== undefined &&
+      String(assigned_to) !== String(issue.assigned_to)
+    ) {
+      return res.status(403).json({ message: "Only administrators can change an issue assignee." });
+    }
+
+    const updates = {};
+    for (const [field, value] of Object.entries({
+      issue_title,
+      description,
+      priority,
+      status,
+      assigned_to,
+      due_date,
+    })) {
+      if (value !== undefined) updates[field] = value;
+    }
+
+    const updatedIssue = await IssuesModel.findByIdAndUpdate(
+      issue._id,
+      { $set: updates },
+      { new: true, runValidators: true },
+    ).populate("assigned_to", "name");
+
+    return res.status(200).json({ message: "Issue updated successfully", data: updatedIssue });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 };
 
 export const deleteIssue = async (req, res) => {
@@ -437,4 +460,3 @@ export const deleteIssue = async (req, res) => {
         res.status(500).json({message:error.message})
     }
 }
-

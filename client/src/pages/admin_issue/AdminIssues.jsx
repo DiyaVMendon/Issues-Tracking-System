@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Select from "react-select";
 import { axiosRequest } from "../../api/axiosRequest";
-import AssetIcon from "../../components/AssetIcon";
-import notificationIcon from "../../assets/icons/notification.svg";
+import InfiniteScrollLoader from "../../components/InfiniteScrollLoader";
+import {
+  deduplicatedRequest,
+  mergeItemsById,
+} from "../../api/deduplicatedRequest";
+import OutsideAlerter from "../../components/OutsideAlerter";
 import UserDropdown from "../userDropdown/userDropdown";
 import IssueDetailPanel from "./admin_issue_comments/IssueDetailPanel";
 import dashboardStyles from "../admin_dashboard/admin_dashboard.module.css";
@@ -44,29 +48,49 @@ const selectStyles = {
   control: (base, state) => ({
     ...base,
     minHeight: 40,
-    borderColor: state.isFocused ? "#8c69e2" : "#dedeea",
+    borderColor: state.isFocused
+      ? "#8c69e2"
+      : "var(--theme-border-strong, #dedeea)",
     borderRadius: 8,
+    backgroundColor: "var(--theme-surface-input, #fff)",
+    color: "var(--theme-text, #39384f)",
     boxShadow: state.isFocused ? "0 0 0 3px rgb(112 72 213 / 10%)" : "none",
     "&:hover": { borderColor: "#8c69e2" },
     cursor: "pointer",
     fontSize: 11,
   }),
   valueContainer: (base) => ({ ...base, padding: "0 10px" }),
-  singleValue: (base) => ({ ...base, color: "#39384f" }),
-  placeholder: (base) => ({ ...base, color: "#39384f" }),
+  singleValue: (base) => ({
+    ...base,
+    color: "var(--theme-text, #39384f)",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "var(--theme-text-secondary, #77768c)",
+  }),
   indicatorsContainer: (base) => ({ ...base, minHeight: 32 }),
   indicatorSeparator: () => ({ display: "none" }),
-  dropdownIndicator: (base) => ({ ...base, padding: "0 6px", color: "#39384f" }),
-  menu: (base) => ({ ...base, zIndex: 20, borderRadius: 8, overflow: "hidden" }),
-  menuPortal: (base) => ({ ...base, zIndex: 30 }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    padding: "0 6px",
+    color: "var(--theme-text-secondary, #77768c)",
+  }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 20,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "var(--theme-surface-raised, #fff)",
+  }),
+  menuPortal: (base) => ({ ...base, zIndex: 70 }),
   option: (base, state) => ({
     ...base,
     backgroundColor: state.isSelected
       ? "#7048d5"
       : state.isFocused
-        ? "#f3edff"
-        : "#fff",
-    color: state.isSelected ? "#fff" : "#39384f",
+        ? "var(--theme-hover, #f3edff)"
+        : "var(--theme-surface-raised, #fff)",
+    color: state.isSelected ? "#fff" : "var(--theme-text, #39384f)",
     cursor: "pointer",
     fontSize: 11,
   }),
@@ -125,6 +149,7 @@ export default function AdminIssues() {
   });
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [assigneeError, setAssigneeError] = useState("");
   const [search, setSearch] = useState("");
@@ -145,6 +170,7 @@ export default function AdminIssues() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingIssue, setEditingIssue] = useState(null);
   const [viewingIssue, setViewingIssue] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -152,6 +178,24 @@ export default function AdminIssues() {
   const [deleteConfirmationIds, setDeleteConfirmationIds] = useState([]);
   const loadMoreRef = useRef(null);
   const issueListRef = useRef(null);
+  const loadingMoreRef = useRef(false);
+
+  const resetPagination = () => {
+    loadingMoreRef.current = false;
+    setLoadingMore(false);
+    setPage(1);
+  };
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setFiltersOpen(false);
+        setViewingIssue(null);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -160,6 +204,7 @@ export default function AdminIssues() {
 
   useEffect(() => {
     let active = true;
+    if (page === 1) loadingMoreRef.current = false;
     const params = new URLSearchParams({
       page: String(page),
       limit: "10",
@@ -170,19 +215,20 @@ export default function AdminIssues() {
     });
     if (assigneeFilter !== "all") params.set("userId", assigneeFilter);
 
-    axiosRequest(`/issues?${params.toString()}`)
+    deduplicatedRequest(
+      `/issues?${params.toString()}`,
+      { skipLoader: page > 1 },
+    )
       .then((response) => {
         if (!active) return;
         const nextIssues = Array.isArray(response.data) ? response.data : [];
         setIssues((current) => {
           if (page === 1 || response.pagination?.page !== page) return nextIssues;
-          const merged = new Map(
-            current.map((issue) => [String(issueKey(issue)), issue]),
+          return mergeItemsById(
+            current,
+            nextIssues,
+            (issue) => issueKey(issue) || `${issue.issue_title}-${issue.createdAt}`,
           );
-          nextIssues.forEach((issue) =>
-            merged.set(String(issueKey(issue)), issue),
-          );
-          return Array.from(merged.values());
         });
         setSummary(response.summary || {
           total: 0,
@@ -202,7 +248,7 @@ export default function AdminIssues() {
       })
       .catch((requestError) => {
         if (!active) return;
-        setIssues([]);
+        if (page === 1) setIssues([]);
         setPagination((current) => ({ ...current, hasNextPage: false }));
         setError(
           requestError.response?.data?.message ||
@@ -210,7 +256,13 @@ export default function AdminIssues() {
         );
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) {
+          if (page === 1) setLoading(false);
+          else {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+          }
+        }
       });
 
     return () => {
@@ -239,8 +291,14 @@ export default function AdminIssues() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && pagination.hasNextPage && !loading) {
-          setLoading(true);
+        if (
+          entry.isIntersecting &&
+          pagination.hasNextPage &&
+          !loading &&
+          !loadingMoreRef.current
+        ) {
+          loadingMoreRef.current = true;
+          setLoadingMore(true);
           setPage((current) => current + 1);
         }
       },
@@ -383,7 +441,7 @@ export default function AdminIssues() {
             result.data.assigned_to || usersById.get(form.assigned_to) || form.assigned_to,
         };
         setIssues((current) => [createdIssue, ...current]);
-        setPage(1);
+        resetPagination();
       }
       setRefreshKey((current) => current + 1);
       setFormOpen(false);
@@ -423,7 +481,7 @@ export default function AdminIssues() {
       );
     }
     if (deletedIds.length) {
-      setPage(1);
+      resetPagination();
       setRefreshKey((current) => current + 1);
     }
     return deletedIds;
@@ -455,10 +513,10 @@ export default function AdminIssues() {
           description: viewingIssue.description,
           priority: changes.priority || viewingIssue.priority,
           status: changes.status || viewingIssue.status,
-          assigned_to:
-            typeof viewingIssue.assigned_to === "object"
+          assigned_to: changes.assigned_to ||
+            (typeof viewingIssue.assigned_to === "object"
               ? viewingIssue.assigned_to?._id
-              : viewingIssue.assigned_to,
+              : viewingIssue.assigned_to),
           due_date: viewingIssue.due_date || undefined,
         },
         "PUT",
@@ -521,7 +579,7 @@ export default function AdminIssues() {
           viewingIssue.assigned_to,
       };
       setViewingIssue(duplicated);
-      setPage(1);
+      resetPagination();
       setRefreshKey((current) => current + 1);
     } catch (requestError) {
       setError(
@@ -549,14 +607,6 @@ export default function AdminIssues() {
         </div>
         <div className={dashboardStyles.topbarSpacer} />
         <div className={dashboardStyles.topbarSpacer} />
-        <button
-          className={dashboardStyles.notificationButton}
-          type="button"
-          aria-label="Notifications"
-        >
-          <AssetIcon src={notificationIcon} />
-          <span className={dashboardStyles.notificationDot} />
-        </button>
         <UserDropdown />
       </header>
 
@@ -593,79 +643,113 @@ export default function AdminIssues() {
                 onChange={(event) => {
                   setLoading(true);
                   setError("");
-                  setPage(1);
+                  resetPagination();
                   setSearch(event.target.value);
                 }}
               />
             </label>
-            <Select
-              aria-label="Filter by status"
-              className={styles.filterSelect}
-              classNamePrefix="admin-select"
-              isSearchable={false}
-              menuPortalTarget={document.body}
-              options={statusOptions}
-              styles={selectStyles}
-              value={statusOptions.find((option) => option.value === statusFilter)}
-              onChange={(option) => {
-                setLoading(true);
-                setError("");
-                setPage(1);
-                setStatusFilter(option?.value || "all");
-              }}
-            />
-            <Select
-              aria-label="Filter by priority"
-              className={styles.filterSelect}
-              classNamePrefix="admin-select"
-              isSearchable={false}
-              menuPortalTarget={document.body}
-              options={priorityOptions}
-              styles={selectStyles}
-              value={priorityOptions.find(
-                (option) => option.value === priorityFilter,
-              )}
-              onChange={(option) => {
-                setLoading(true);
-                setError("");
-                setPage(1);
-                setPriorityFilter(option?.value || "all");
-              }}
-            />
-            <Select
-              aria-label="Filter by assignee"
-              className={styles.filterSelect}
-              classNamePrefix="admin-select"
-              isSearchable
-              menuPortalTarget={document.body}
-              options={assigneeFilterOptions}
-              styles={selectStyles}
-              value={assigneeFilterOptions.find(
-                (option) => option.value === assigneeFilter,
-              )}
-              onChange={(option) => {
-                setLoading(true);
-                setError("");
-                setPage(1);
-                setAssigneeFilter(option?.value || "all");
-              }}
-            />
-            <Select
-              aria-label="Sort issues"
-              className={`${styles.filterSelect} ${styles.sortSelect}`}
-              classNamePrefix="admin-select"
-              isSearchable={false}
-              menuPortalTarget={document.body}
-              options={sortOptions}
-              styles={selectStyles}
-              value={sortOptions.find((option) => option.value === sortOrder)}
-              onChange={(option) => {
-                setLoading(true);
-                setError("");
-                setPage(1);
-                setSortOrder(option?.value || "newest");
-              }}
-            />
+            <OutsideAlerter
+              className={styles.filterPopoverAnchor}
+              enabled={filtersOpen}
+              ignoreSelector=".admin-select__menu-portal"
+              onOutsideClick={() => setFiltersOpen(false)}
+            >
+              <button
+                className={styles.filterToggle}
+                type="button"
+                aria-label="Toggle issue filters"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((open) => !open)}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 5h16l-6.2 7.1v5.1l-3.6 1.8v-6.9L4 5Z" />
+                </svg>
+              </button>
+              <div
+                className={`${styles.filterControls} ${filtersOpen ? styles.filterControlsOpen : ""}`}
+                role={filtersOpen ? "dialog" : undefined}
+                aria-labelledby={filtersOpen ? "issue-filter-title" : undefined}
+              >
+                <div className={styles.filterModalHeading}>
+                  <h2 id="issue-filter-title">Filters and sorting</h2>
+                  <button
+                    type="button"
+                    aria-label="Close filters"
+                    onClick={() => setFiltersOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <Select
+                  aria-label="Filter by status"
+                  className={styles.filterSelect}
+                  classNamePrefix="admin-select"
+                  isSearchable={false}
+                  menuPortalTarget={document.body}
+                  options={statusOptions}
+                  styles={selectStyles}
+                  value={statusOptions.find((option) => option.value === statusFilter)}
+                  onChange={(option) => {
+                    setLoading(true);
+                    setError("");
+                    resetPagination();
+                    setStatusFilter(option?.value || "all");
+                  }}
+                />
+                <Select
+                  aria-label="Filter by priority"
+                  className={styles.filterSelect}
+                  classNamePrefix="admin-select"
+                  isSearchable={false}
+                  menuPortalTarget={document.body}
+                  options={priorityOptions}
+                  styles={selectStyles}
+                  value={priorityOptions.find(
+                    (option) => option.value === priorityFilter,
+                  )}
+                  onChange={(option) => {
+                    setLoading(true);
+                    setError("");
+                    resetPagination();
+                    setPriorityFilter(option?.value || "all");
+                  }}
+                />
+                <Select
+                  aria-label="Filter by assignee"
+                  className={styles.filterSelect}
+                  classNamePrefix="admin-select"
+                  isSearchable
+                  menuPortalTarget={document.body}
+                  options={assigneeFilterOptions}
+                  styles={selectStyles}
+                  value={assigneeFilterOptions.find(
+                    (option) => option.value === assigneeFilter,
+                  )}
+                  onChange={(option) => {
+                    setLoading(true);
+                    setError("");
+                    resetPagination();
+                    setAssigneeFilter(option?.value || "all");
+                  }}
+                />
+                <Select
+                  aria-label="Sort issues"
+                  className={`${styles.filterSelect} ${styles.sortSelect}`}
+                  classNamePrefix="admin-select"
+                  isSearchable={false}
+                  menuPortalTarget={document.body}
+                  options={sortOptions}
+                  styles={selectStyles}
+                  value={sortOptions.find((option) => option.value === sortOrder)}
+                  onChange={(option) => {
+                    setLoading(true);
+                    setError("");
+                    resetPagination();
+                    setSortOrder(option?.value || "newest");
+                  }}
+                />
+              </div>
+            </OutsideAlerter>
           </div>
 
           {assigneeError && (
@@ -690,93 +774,111 @@ export default function AdminIssues() {
           <div
             className={`${styles.issueWorkspace} ${viewingIssue ? styles.issueWorkspaceWithDetail : ""}`}
           >
-            <div className={styles.issueListColumn} ref={issueListRef}>
+            <div className={styles.issueListColumn}>
               <div className={styles.listHeading}>
                 <strong>{pagination.total} Issues</strong>
                 <span>Sort: {sortOptions.find((option) => option.value === sortOrder)?.label.replace("Sort: ", "")}</span>
               </div>
-              <div className={styles.issueList}>
-                {loading && page === 1 ? (
-                  <p className={styles.tableMessage}>Loading issues…</p>
-                ) : visibleIssues.length ? (
-                  visibleIssues.map((issue) => {
-                    const id = String(issueKey(issue));
-                    const status = normalizeStatus(issue.status);
-                    const statusKey = status === "in progress" ? "inProgress" : status;
-                    const selected = String(issueKey(viewingIssue || {})) === id;
-                    return (
-                      <article
-                        className={`${styles.issueListItem} ${selected ? styles.selectedIssue : ""}`}
-                        key={id}
-                      >
-                        <input
-                          type="checkbox"
-                          aria-label={`Select ${issue.issue_title || "issue"}`}
-                          checked={selectedIds.includes(id)}
-                          onChange={() => toggleSelection(id)}
-                        />
-                        <button
-                          className={styles.issueListSelect}
-                          type="button"
-                          aria-pressed={selected}
-                          onClick={() => setViewingIssue(issue)}
+              <div className={styles.issueItemsScroll} ref={issueListRef}>
+                <div className={styles.issueList}>
+                  {loading && page === 1 ? (
+                    <p className={styles.tableMessage}>Loading issues…</p>
+                  ) : visibleIssues.length ? (
+                    visibleIssues.map((issue) => {
+                      const id = String(issueKey(issue));
+                      const status = normalizeStatus(issue.status);
+                      const statusKey = status === "in progress" ? "inProgress" : status;
+                      const selected = String(issueKey(viewingIssue || {})) === id;
+                      return (
+                        <article
+                          className={`${styles.issueListItem} ${selected ? styles.selectedIssue : ""}`}
+                          key={id}
                         >
-                          <span className={styles.issueListTop}>
-                            <strong>{getIssueCode(issue)}</strong>
-                            <span className={`${styles.statusBadge} ${styles[statusKey] || styles.open}`}>
-                              {statusOptions.find((option) => option.value === status)?.label || issue.status}
+                          <input
+                            type="checkbox"
+                            aria-label={`Select ${issue.issue_title || "issue"}`}
+                            checked={selectedIds.includes(id)}
+                            onChange={() => toggleSelection(id)}
+                          />
+                          <button
+                            className={styles.issueListSelect}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => {
+                              setFiltersOpen(false);
+                              setViewingIssue(issue);
+                            }}
+                          >
+                            <span className={styles.issueListTop}>
+                              <strong>{getIssueCode(issue)}</strong>
+                              <span className={`${styles.statusBadge} ${styles[statusKey] || styles.open}`}>
+                                {statusOptions.find((option) => option.value === status)?.label || issue.status}
+                              </span>
                             </span>
-                          </span>
-                          <span className={styles.issueListTitle}>{issue.issue_title || "Untitled issue"}</span>
-                          <span className={styles.issueListDescription}>{issue.description || "No description provided."}</span>
-                          <span className={styles.issueListMeta}>
-                            <span>{getInitial(getAssignee(issue))} {getAssignee(issue)}</span>
-                            <span>▣ {formatDate(issue.due_date)}</span>
-                            <span>◷ {formatDate(issue.createdAt)}</span>
-                          </span>
-                        </button>
-                      </article>
-                    );
-                  })
-                ) : (
-                  <p className={styles.tableMessage}>
-                    {summary.total
-                      ? "No issues match the selected filters."
-                      : "No issues have been created yet."}
-                  </p>
+                            <span className={styles.issueListTitle}>{issue.issue_title || "Untitled issue"}</span>
+                            <span className={styles.issueListDescription}>{issue.description || "No description provided."}</span>
+                            <span className={styles.issueListMeta}>
+                              <span>{getInitial(getAssignee(issue))} {getAssignee(issue)}</span>
+                              <span>▣ {formatDate(issue.due_date)}</span>
+                              <span>◷ {formatDate(issue.createdAt)}</span>
+                            </span>
+                          </button>
+                        </article>
+                      );
+                    })
+                  ) : (
+                    <p className={styles.tableMessage}>
+                      {summary.total
+                        ? "No issues match the selected filters."
+                        : "No issues have been created yet."}
+                    </p>
+                  )}
+                </div>
+                {loadingMore && (
+                  <InfiniteScrollLoader label="Loading more issues…" />
                 )}
+                <span className={styles.issueLoadSentinel} ref={loadMoreRef} aria-hidden="true" />
               </div>
-              <div className={styles.tableFooter}>
+              <div className={styles.tableFooter} aria-live="polite">
                 <span>Showing {issues.length} of {pagination.total} issues</span>
-                <span ref={loadMoreRef} aria-live="polite">
-                  {loading && page > 1
-                    ? "Loading more…"
-                    : pagination.hasNextPage
-                      ? "Scroll to load more"
-                      : "All issues loaded"}
+                <span>
+                  {pagination.hasNextPage
+                    ? "Scroll to load more"
+                    : "All issues loaded"}
                 </span>
               </div>
             </div>
             {viewingIssue ? (
-              <IssueDetailPanel
-                key={issueKey(viewingIssue)}
-                issue={viewingIssue}
-                isAdmin
-                saving={saving}
-                onClose={() => setViewingIssue(null)}
-                onEdit={() => {
-                  const issue = viewingIssue;
-                  setViewingIssue(null);
-                  openEditForm(issue);
+              <div
+                className={styles.issueDetailContainer}
+                role="presentation"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) {
+                    setViewingIssue(null);
+                  }
                 }}
-                onDelete={() => {
-                  const id = String(issueKey(viewingIssue));
-                  setDeleteConfirmationIds([id]);
-                }}
-                onDuplicate={duplicateSelectedIssue}
-                onAdminUpdate={updateSelectedIssue}
-                onAttachmentRemoved={updateIssueAfterAttachmentRemoval}
-              />
+              >
+                <IssueDetailPanel
+                  key={issueKey(viewingIssue)}
+                  issue={viewingIssue}
+                  isAdmin
+                  saving={saving}
+                  onClose={() => setViewingIssue(null)}
+                  onEdit={() => {
+                    const issue = viewingIssue;
+                    setViewingIssue(null);
+                    openEditForm(issue);
+                  }}
+                  onDelete={() => {
+                    const id = String(issueKey(viewingIssue));
+                    setDeleteConfirmationIds([id]);
+                  }}
+                  onDuplicate={duplicateSelectedIssue}
+                  onAdminUpdate={updateSelectedIssue}
+                  assigneeOptions={assigneeOptions}
+                  onAttachmentRemoved={updateIssueAfterAttachmentRemoval}
+                />
+              </div>
             ) : null}
           </div>
         </section>

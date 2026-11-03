@@ -2,7 +2,9 @@
 
 IssueTracker is a web-based issue tracking system for teams. Administrators can manage users and issues, while employees can view and update issues assigned to them.
 
-> **Deployment status:** No live deployment URL or configured Git remote is present in this repository. The deployment section below describes a recommended setup; it is not a claim that the application is currently hosted.
+> **Live application:** [issues-tracking-system.vercel.app](https://issues-tracking-system.vercel.app/)
+> **API:** [issuetracker-api.vercel.app](https://issuetracker-api.vercel.app/) (`/api` is the API base path).
+GitHub Repository: https://github.com/DiyaVMendon/Issues-Tracking-System
 
 ## Features
 
@@ -14,6 +16,11 @@ IssueTracker is a web-based issue tracking system for teams. Administrators can 
 - View and edit profile details; change passwords.
 - Light and dark themes.
 - Paginated API results and scroll-based loading in issue lists.
+
+## Administrator access
+
+- Email: `admin@gmail.com`
+- Password: 12345678
 
 ## Architecture
 
@@ -152,7 +159,6 @@ Authorization: Bearer <access-token>
 | `PUT` | `/api/auth/users/manage/:id` | Token; administrator required | Update a managed user. |
 | `DELETE` | `/api/auth/users/manage/:id` | Token; administrator required | Delete a managed user. |
 | `GET` | `/api/auth/users` | Token | Read a user by query parameter. |
-| `POST` | `/api/auth/forgot-password` | Public | Request a password-reset email. |
 | `POST` | `/api/auth/reset-password/:token` | Public | Reset a password using a reset token. |
 
 ### Issues and comments
@@ -176,41 +182,33 @@ Successful endpoints generally return a JSON object with a `message` and, when a
 
 ### Current deployment status
 
-- **Live application URL:** Not deployed.
-- **Frontend host:** Not configured.
-- **API host:** Not configured.
-- **Source-control remote:** None configured in the inspected repository.
+- **Live application URL:** [https://issues-tracking-system.vercel.app/](https://issues-tracking-system.vercel.app/)
+- **Frontend host:** Vercel; project root is `client/`, built with Vite.
+- **API base URL:** [https://issuetracker-api.vercel.app/api](https://issuetracker-api.vercel.app/api)
+- **API host:** Vercel.
+- **Source repository:** [DiyaVMendon/Issues-Tracking-System](https://github.com/DiyaVMendon/Issues-Tracking-System)
 
-No hosting platform URL or deployment credentials are available in this repository, so a live deployment cannot be documented as already completed.
-
-### Recommended hosting layout
+### Hosting layout
 
 - **Frontend:** Vercel static hosting, built from the `client/` directory.
-- **API:** Render Web Service (or another Node.js host), rooted at `server/`, started with `node local.js`.
+- **API:** Vercel deployment at `https://issuetracker-api.vercel.app/`; the client calls its `/api` endpoints.
 - **Database:** MongoDB Atlas.
 - **Images:** Cloudinary.
 - **Email:** Gmail SMTP with an app password, if password reset is enabled.
 
-These are recommended services, not existing deployments. Before production, secure the issue routes noted above, configure CORS to allow only the frontend origin, and validate the password-reset flow.
+Before production use, secure the issue routes noted above, configure CORS to allow only the frontend origin, and validate the password-reset flow.
 
-### First deployment
+### Deployment and updates
 
-1. Push the repository to a Git provider and connect the repository to your hosting providers.
-2. Create a MongoDB Atlas database and allow connections from the API host. Keep database credentials private.
-3. Create a Cloudinary account and collect its cloud name, API key, and API secret.
-4. Create an API web service using `server/` as the root directory and `node local.js` as the start command. Set `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `PORT` if required by the host, and the Cloudinary variables. Add `EMAIL_USER` and `EMAIL_PASS` only if password-reset email is enabled.
-5. Deploy the API and confirm its root health endpoint returns `API is running`.
-6. Create a frontend project using `client/` as the root directory, `npm run build` as the build command, and `dist` as the output directory.
-7. Set the frontend build variable `VITE_API_URL` to the deployed API URL followed by `/api` (for example, `https://your-api.example.com/api`).
-8. Configure the frontend host to serve the SPA entry point for client-side routes, then deploy and test sign-in, issue operations, image upload/removal, and deep links after refresh.
-9. Record the resulting frontend and API URLs in this README and the Deployment section of [BRD.md](./BRD.md).
+The application is deployed from the GitHub repository using Vercel projects for the client and API. For a new environment or redeployment:
 
-### Deploying updates
-
-1. Commit and push the verified changes to the deployment branch.
-2. Confirm required environment variables are set in each hosting provider; never put server secrets in client variables.
-3. Redeploy the API when server code changes and the frontend when client code or `VITE_API_URL` changes.
-4. Review provider build/runtime logs and smoke-test the live application.
+1. Connect [DiyaVMendon/Issues-Tracking-System](https://github.com/DiyaVMendon/Issues-Tracking-System) to Vercel and create or select the relevant project.
+2. For the frontend project, set the root directory to `client/`, the build command to `npm run build`, and the output directory to `dist`.
+3. Set the frontend project's `VITE_API_URL` to `https://issuetracker-api.vercel.app/api` in Vercel's environment variables for the required deployment environments.
+4. For the API project, use `server/` as its root directory and configure `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, Cloudinary credentials, and optional Gmail credentials in Vercel. Never expose server secrets as `VITE_` variables.
+5. Ensure the API deployment can reach MongoDB Atlas and Cloudinary, and that CORS permits the frontend origin.
+6. Push changes to the connected deployment branch or trigger a deployment from Vercel. Redeploy the API for server changes and the frontend for client changes or `VITE_API_URL` changes.
+7. Review Vercel build/runtime logs and smoke-test sign-in, role-specific access, issue operations, comments, image uploads/removal, and direct navigation/refresh on client routes.
 
 ## Project brief
 

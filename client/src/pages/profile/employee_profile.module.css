@@ -3,7 +3,7 @@
 }
 
 .profileBody {
-  width: min(1120px, 100%);
+  width:100%;
   padding-top: 24px;
 }
 
@@ -30,6 +30,7 @@
   grid-template-columns: minmax(230px, 0.78fr) minmax(0, 1.7fr);
   align-items: stretch;
   gap: 16px;
+  height: calc(100% - 5rem)
 }
 
 .summaryCard,
@@ -420,13 +421,20 @@
   }
 
   .tabs {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .tab {
-    flex: 1 1 120px;
+    flex: 0 0 auto;
     min-height: 44px;
-    white-space: normal;
+    white-space: nowrap;
   }
 }
 
@@ -482,4 +490,17 @@
 
 .activeTab {
   color: var(--theme-hover-text, #c5b4ff);
+}
+
+.accountDetails > div {
+  border-color: var(--theme-border-subtle, #efedf5);
+  background: var(--theme-surface-inset, #fcfbff);
+}
+
+.accountDetails dt {
+  color: var(--theme-text-secondary, #77768c);
+}
+
+.accountDetails dd {
+  color: var(--theme-text, #302e48);
 }

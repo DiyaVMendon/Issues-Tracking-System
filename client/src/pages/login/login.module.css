@@ -80,8 +80,19 @@
   padding: 14px 15px;
   font: inherit;
   background: white;
+  color: #211b39;
+  -webkit-text-fill-color: #211b39;
+  caret-color: #211b39;
   outline: none;
   margin-bottom: 23px;
+}
+.card input:-webkit-autofill,
+.card input:-webkit-autofill:hover,
+.card input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #211b39;
+  caret-color: #211b39;
+  box-shadow: 0 0 0 1000px #fff inset;
+  transition: background-color 9999s ease-out 0s;
 }
 .card input:focus {
   border-color: #7547de;
@@ -104,10 +115,11 @@
 .passwordWrap input {
   padding-right: 72px;
 }
+
 .passwordWrap button {
   position: absolute;
   right: 12px;
-  top: 13px;
+  top: 16px;
   border: 0;
   background: transparent;
   color: #6435cb;

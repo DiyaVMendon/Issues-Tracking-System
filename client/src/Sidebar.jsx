@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ThemeDialog } from "./pages/userDropdown/userDropdown";
@@ -25,6 +25,7 @@ export default function Sidebar({ theme, setTheme }) {
   const navigate = useNavigate();
   const { pathname, hash } = useLocation();
   const [themeDialogOpen, setThemeDialogOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const role = localStorage.getItem("role")?.toLowerCase() || "employee";
   const isAdmin = role === "admin";
   const links = isAdmin ? adminLinks : employeeLinks;
@@ -41,6 +42,7 @@ export default function Sidebar({ theme, setTheme }) {
             : "dashboard";
 
   const handleLogout = () => {
+    setMobileNavOpen(false);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("role");
     localStorage.removeItem("userId");
@@ -52,61 +54,106 @@ export default function Sidebar({ theme, setTheme }) {
   const getNavClassName = (page) =>
     `${styles.navLink}${activePage === page ? ` ${styles.activeNav}` : ""}`;
 
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
+
   return (
-    <aside className={styles.sidebar}>
-      <Link
-        className={styles.brand}
-        to={isAdmin ? "/admin/dashboard" : "/employee/dashboard"}
-        aria-label="IssueTracker dashboard"
+    <>
+      {!mobileNavOpen && (
+        <button
+          className={styles.sidebarToggle}
+          type="button"
+          aria-label="Open navigation menu"
+          aria-expanded={false}
+          aria-controls="app-navigation"
+          onClick={() => setMobileNavOpen(true)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      )}
+      {mobileNavOpen && (
+        <button
+          className={styles.sidebarBackdrop}
+          type="button"
+          aria-label="Close navigation menu"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+      <aside
+        className={`${styles.sidebar}${mobileNavOpen ? ` ${styles.sidebarOpen}` : ""}`}
+        id="app-navigation"
       >
-        <span className={styles.brandMark}>◆</span>
-        <span>IssueTracker</span>
-      </Link>
+        <Link
+          className={styles.brand}
+          to={isAdmin ? "/admin/dashboard" : "/employee/dashboard"}
+          aria-label="IssueTracker dashboard"
+          onClick={() => setMobileNavOpen(false)}
+        >
+          <span className={styles.brandMark}>◆</span>
+          <span>IssueTracker</span>
+        </Link>
 
-      <div className={styles.navSectionLabel}>{isAdmin ? "ADMIN" : "EMPLOYEE"}</div>
-      <nav
-        className={styles.navigation}
-        aria-label={`${isAdmin ? "Admin" : "Employee"} navigation`}
-      >
-        {links.map(({ label, icon, to, href, key }) =>
-          to ? (
-            <Link
-              className={getNavClassName(key)}
-              key={key}
-              to={to}
-            >
-              <span className={styles.navIcon}>{icon}</span>
-              {label}
-            </Link>
-          ) : (
-            <a
-              className={getNavClassName(key)}
-              href={href}
-              key={key}
-            >
-              <span className={styles.navIcon}>{icon}</span>
-              {label}
-            </a>
-          ),
-        )}
-      </nav>
+        <div className={styles.navSectionLabel}>{isAdmin ? "ADMIN" : "EMPLOYEE"}</div>
+        <nav
+          className={styles.navigation}
+          aria-label={`${isAdmin ? "Admin" : "Employee"} navigation`}
+        >
+          {links.map(({ label, icon, to, href, key }) =>
+            to ? (
+              <Link
+                className={getNavClassName(key)}
+                key={key}
+                to={to}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                <span className={styles.navIcon}>{icon}</span>
+                {label}
+              </Link>
+            ) : (
+              <a
+                className={getNavClassName(key)}
+                href={href}
+                key={key}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                <span className={styles.navIcon}>{icon}</span>
+                {label}
+              </a>
+            ),
+          )}
+        </nav>
 
-      <div className={styles.sidebarBottom}>
-        {isAdmin && (
+        <div className={styles.sidebarBottom}>
+          {isAdmin && (
+            <button
+              className={styles.navLink}
+              type="button"
+              onClick={() => {
+                setMobileNavOpen(false);
+                setThemeDialogOpen(true);
+              }}
+            >
+              <span className={styles.navIcon}>⚙</span>
+              Settings
+            </button>
+          )}
           <button
             className={styles.navLink}
             type="button"
-            onClick={() => setThemeDialogOpen(true)}
+            onClick={handleLogout}
           >
-            <span className={styles.navIcon}>⚙</span>
-            Settings
+            <span className={styles.navIcon}>↪</span>
+            Logout
           </button>
-        )}
-        <button className={styles.navLink} type="button" onClick={handleLogout}>
-          <span className={styles.navIcon}>↪</span>
-          Logout
-        </button>
-      </div>
+        </div>
+      </aside>
       {themeDialogOpen && (
         <ThemeDialog
           theme={theme}
@@ -114,6 +161,6 @@ export default function Sidebar({ theme, setTheme }) {
           onClose={() => setThemeDialogOpen(false)}
         />
       )}
-    </aside>
+    </>
   );
 }

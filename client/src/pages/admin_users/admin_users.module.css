@@ -1,4 +1,7 @@
 .usersBody {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding-top: 20px;
 }
 
@@ -111,6 +114,10 @@
 }
 
 .usersPanel {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  flex-direction: column;
   overflow: hidden;
   padding: 10px;
   border: 1px solid #e8e8f0;
@@ -124,6 +131,19 @@
   grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(120px, 0.8fr));
   gap: 9px;
   margin-bottom: 9px;
+}
+
+.filterToggle,
+.filterModalHeading {
+  display: none;
+}
+
+.filterPopoverAnchor {
+  display: contents;
+}
+
+.filterControls {
+  display: contents;
 }
 
 .searchBox {
@@ -170,6 +190,21 @@
   min-width: 0;
 }
 
+.usersListScroll {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #9c91bb transparent;
+  scrollbar-width: thin;
+}
+
+.usersLoadSentinel {
+  display: block;
+  height: 1px;
+}
+
 .usersTableHeader,
 .userRow {
   display: grid;
@@ -182,6 +217,7 @@
   display: block;
   width: 100%;
   min-width: 0;
+  overflow: visible !important;
   color: #37364d;
   text-align: left;
 }
@@ -191,7 +227,19 @@
   width: 100%;
 }
 
+.infiniteScrollLoaderRow {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.infiniteScrollLoaderRow > div {
+  grid-column: 1 / -1;
+}
+
 .usersTableHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   min-height: 32px;
   align-items: center;
   background: #f5f4fa;
@@ -228,6 +276,14 @@
 
 .tableMessage > div {
   grid-column: 1 / -1;
+}
+
+.emptyUsersMessage {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  place-items: center;
+  pointer-events: none;
 }
 
 .nameCell {
@@ -341,11 +397,15 @@
 
 .tableFooter {
   display: flex;
-  min-height: 30px;
+  flex: 0 0 auto;
+  min-height: 34px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 7px 3px 0;
+  margin: 0 -10px -10px;
+  padding: 0 13px;
+  border-top: 1px solid var(--theme-border-subtle, #30313b);
+  background: var(--theme-surface-raised, #fff);
   color: #89889b;
   font-size: 9px;
 }
@@ -436,7 +496,7 @@
 .modalHeader h2,
 .confirmModal h2 {
   margin: 0;
-  color: #29283f;
+  color: var(--theme-text, #29283f);
   font-size: 15px;
 }
 
@@ -599,6 +659,87 @@
   }
 }
 
+@media (max-width: 900px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .filterToggle {
+    display: grid;
+    width: 40px;
+    height: 36px;
+    place-items: center;
+    border: 1px solid var(--theme-border-strong, #dedeea);
+    border-radius: 7px;
+    background: var(--theme-surface-input, #fff);
+    color: var(--theme-text, #39384f);
+    cursor: pointer;
+  }
+
+  .filterToggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+
+  .filterControls {
+    display: none;
+  }
+
+  .filterControlsOpen {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 81;
+    display: grid;
+    width: min(380px, calc(100vw - 32px));
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--theme-border, #e8e8f0);
+    border-radius: 14px;
+    background: var(--theme-surface, #fff);
+    box-shadow: 0 24px 70px rgb(22 16 44 / 30%);
+  }
+
+  .filterPopoverAnchor {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .filterModalHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--theme-text, #29283f);
+  }
+
+  .filterModalHeading h2 {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .filterModalHeading button {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--theme-text-secondary, #77768c);
+    cursor: pointer;
+    font: inherit;
+    font-size: 22px;
+  }
+
+}
+
 @media (max-width: 640px) {
   .pageHeading h1 {
     font-size: 21px;
@@ -629,16 +770,18 @@
     font-size: 16px;
   }
 
-  .filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .searchBox {
-    grid-column: 1 / -1;
+    grid-column: 1;
   }
 
   .usersPanel {
     padding: 7px;
+  }
+
+  .tableFooter {
+    margin: 0 -7px -7px;
+    padding-right: 10px;
+    padding-left: 10px;
   }
 
   .usersTableHeader > div,
@@ -691,11 +834,6 @@
     font-size: 9px;
   }
 
-  .tableFooter {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
-  }
 }
 
 .statCard,

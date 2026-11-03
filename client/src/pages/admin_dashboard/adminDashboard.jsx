@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { axiosRequest } from "../../api/axiosRequest";
-import AssetIcon from "../../components/AssetIcon";
+import InfiniteScroll from "react-infinite-scroll-component";
+import InfiniteScrollLoader from "../../components/InfiniteScrollLoader";
+import {
+  deduplicatedRequest,
+  mergeItemsById,
+} from "../../api/deduplicatedRequest";
 import IssueStatCards from "./IssueStatCards";
 import closedIssueIcon from "../../assets/icons/issue-closed.svg";
 import openIssueIcon from "../../assets/icons/issue-open.svg";
 import progressIssueIcon from "../../assets/icons/issue-progress.svg";
 import issuesIcon from "../../assets/icons/issues.svg";
-import notificationIcon from "../../assets/icons/notification.svg";
 import UserDropdown from "../userDropdown/userDropdown";
 import styles from "./admin_dashboard.module.css";
 
@@ -46,30 +49,50 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ hasNextPage: false });
+  const loadingMoreRef = useRef(false);
 
   useEffect(() => {
     let active = true;
 
     const fetchIssues = async () => {
+      if (page === 1) setLoading(true);
+      setError("");
       try {
-        const response = await axiosRequest("/issues?page=1&limit=5&sort=newest");
+        const response = await deduplicatedRequest(
+          `/issues?page=${page}&limit=5&sort=newest`,
+          { skipLoader: page > 1 },
+        );
         if (active) {
-          setIssues(Array.isArray(response.data) ? response.data : []);
+          const nextIssues = Array.isArray(response.data) ? response.data : [];
+          setIssues((currentIssues) => {
+            return mergeItemsById(
+              page === 1 ? [] : currentIssues,
+              nextIssues,
+              (issue) => issue._id || issue.id || `${issue.issue_title}-${issue.createdAt}`,
+            );
+          });
           setSummary(response.summary || {
             total: 0,
             open: 0,
             inProgress: 0,
             closed: 0,
           });
+          setPagination(response.pagination || { hasNextPage: false });
         }
       } catch (requestError) {
         if (!active) return;
+        setPagination({ hasNextPage: false });
         setError(
           requestError.response?.data?.message ||
             "Could not load issues. Please try again.",
         );
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          if (page === 1) setLoading(false);
+          else loadingMoreRef.current = false;
+        }
       }
     };
 
@@ -77,10 +100,20 @@ export default function AdminDashboard() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [page]);
 
   const counts = summary;
   const displayedIssues = issues;
+  const loadMoreIssues = () => {
+    if (
+      !loading &&
+      !loadingMoreRef.current &&
+      pagination.hasNextPage
+    ) {
+      loadingMoreRef.current = true;
+      setPage((current) => current + 1);
+    }
+  };
   const totalIssues = summary.total;
   const statCards = [
     { label: "Total Issues", value: totalIssues, icon: issuesIcon, variant: "totalCard" },
@@ -103,14 +136,10 @@ export default function AdminDashboard() {
             IssueTracker
           </div>
           <div className={styles.topbarSpacer} />
-          <button className={styles.notificationButton} type="button" aria-label="Notifications">
-            <AssetIcon src={notificationIcon} />
-            <span className={styles.notificationDot} />
-          </button>
           <UserDropdown />
         </header>
 
-        <div className={styles.dashboardBody}>
+        <div className={`${styles.dashboardBody} ${styles.noPageScrollbar}`}>
           <div className={styles.pageHeading}>
             <div>
               <p className={styles.eyebrow}>WORKSPACE OVERVIEW</p>
@@ -196,21 +225,31 @@ export default function AdminDashboard() {
               {loading ? (
                 <p className={styles.tableMessage}>Loading issues…</p>
               ) : displayedIssues.length ? (
-                <div className={styles.issueList}>
-                  {displayedIssues.map((issue) => {
-                    const statusKey = getStatusKey(issue.status);
-                    return (
-                      <div className={styles.issueRow} key={issue._id || issue.id || issue.issue_title}>
-                        <span className={styles.issueId}>{getIssueId(issue)}</span>
-                        <span className={styles.issueTitle} title={issue.issue_title}>
-                          {issue.issue_title || "Untitled issue"}
-                        </span>
-                        <span className={`${styles.statusBadge} ${styles[statusKey]}`}>
-                          {formatStatus(issue.status)}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className={styles.recentIssuesScroll} id="admin-recent-issues-scroll">
+                  <InfiniteScroll
+                    className={styles.issueList}
+                    dataLength={displayedIssues.length}
+                    hasMore={Boolean(pagination.hasNextPage)}
+                    loader={<InfiniteScrollLoader label="Loading more issues…" />}
+                    next={loadMoreIssues}
+                    scrollThreshold="120px"
+                    scrollableTarget="admin-recent-issues-scroll"
+                  >
+                    {displayedIssues.map((issue) => {
+                      const statusKey = getStatusKey(issue.status);
+                      return (
+                        <div className={styles.issueRow} key={issue._id || issue.id || issue.issue_title}>
+                          <span className={styles.issueId}>{getIssueId(issue)}</span>
+                          <span className={styles.issueTitle} title={issue.issue_title}>
+                            {issue.issue_title || "Untitled issue"}
+                          </span>
+                          <span className={`${styles.statusBadge} ${styles[statusKey]}`}>
+                            {formatStatus(issue.status)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </InfiniteScroll>
                 </div>
               ) : (
                 <p className={styles.tableMessage}>No issues have been created yet.</p>

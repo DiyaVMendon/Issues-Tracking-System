@@ -61,18 +61,98 @@ const getAssignee = (issue) =>
     ? issue.assigned_to?.name || "Unassigned"
     : "Unassigned";
 
+const getAssigneeId = (issue) =>
+  typeof issue?.assigned_to === "object"
+    ? issue.assigned_to?._id || ""
+    : issue?.assigned_to || "";
+
 const selectStyles = {
   control: (base, state) => ({
     ...base,
-    minHeight: 34,
-    borderColor: state.isFocused ? "#8c69e2" : "#dedeea",
+    minHeight: 32,
+    borderColor: state.isFocused
+      ? "#8c69e2"
+      : "var(--theme-border-strong, #dedeea)",
     borderRadius: 7,
-    boxShadow: state.isFocused ? "0 0 0 3px rgb(112 72 213 / 10%)" : "none",
-    fontSize: 11,
+    backgroundColor: "var(--theme-surface-input, #fff)",
+    color: "var(--theme-text, #39384f)",
+    boxShadow: state.isFocused ? "0 0 0 3px rgb(112 72 213 / 14%)" : "none",
+    fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontSize: 10,
+    transition: "border-color 120ms ease, box-shadow 120ms ease",
+    "&:hover": {
+      borderColor: state.isFocused ? "#8c69e2" : "var(--theme-border-strong, #dedeea)",
+    },
+  }),
+  valueContainer: (base) => ({
+    ...base,
+    minWidth: 0,
+    padding: "0 9px",
+  }),
+  singleValue: (base) => ({
+    ...base,
+    overflow: "hidden",
+    color: "var(--theme-text, #39384f)",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "var(--theme-text-secondary, #77768c)",
+  }),
+  input: (base) => ({
+    ...base,
+    color: "var(--theme-text, #39384f)",
+  }),
+  dropdownIndicator: (base) => ({
+    ...base,
+    padding: "0 8px",
+    color: "var(--theme-text-secondary, #77768c)",
+    "&:hover": { color: "#8c69e2" },
   }),
   indicatorSeparator: () => ({ display: "none" }),
   menuPortal: (base) => ({ ...base, zIndex: 10020 }),
-  menu: (base) => ({ ...base, zIndex: 10020 }),
+  menu: (base) => ({
+    ...base,
+    zIndex: 10020,
+    backgroundColor: "var(--theme-surface-raised, #fff)",
+    border: "1px solid var(--theme-border-strong, #dedeea)",
+    borderRadius: 8,
+    boxShadow: "0 10px 24px rgb(20 16 40 / 20%)",
+    overflow: "hidden",
+    fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  }),
+  menuList: (base) => ({
+    ...base,
+    maxHeight: 160,
+    padding: 3,
+    scrollbarColor: "var(--theme-border-strong, #dedeea) transparent",
+    scrollbarWidth: "thin",
+  }),
+  option: (base, state) => ({
+    ...base,
+    minHeight: 28,
+    borderRadius: 4,
+    fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontSize: 10,
+    lineHeight: 1.2,
+    padding: "6px 8px",
+    transition: "background-color 100ms ease, color 100ms ease",
+    backgroundColor: state.isSelected
+      ? "#7048d5"
+      : state.isFocused
+        ? "var(--theme-hover, #f3edff)"
+        : "var(--theme-surface-raised, #fff)",
+    color: state.isSelected
+      ? "#fff"
+      : "var(--theme-text, #39384f)",
+    cursor: "pointer",
+  }),
+  noOptionsMessage: (base) => ({
+    ...base,
+    color: "var(--theme-text-secondary, #77768c)",
+    fontSize: 11,
+  }),
 };
 
 export default function IssueDetailPanel({
@@ -83,6 +163,7 @@ export default function IssueDetailPanel({
   onDelete,
   onDuplicate,
   onAdminUpdate,
+  assigneeOptions = [],
   onAttachmentRemoved,
   onEmployeeStatusSave,
   saving = false,
@@ -198,7 +279,10 @@ export default function IssueDetailPanel({
   };
 
   return (
-    <aside className={styles.detailPanel} aria-label="Issue details">
+    <aside
+      className={`${styles.detailPanel} ${isAdmin ? styles.adminDetailPanel : styles.employeeDetailPanel}`}
+      aria-label="Issue details"
+    >
       <header className={styles.panelHeader}>
         <div className={styles.issueHeading}>
           <span className={styles.issueCode}>{getIssueCode(issue)}</span>
@@ -363,7 +447,25 @@ export default function IssueDetailPanel({
         </div>
         <div className={styles.metadataField}>
           <span>Assigned To</span>
-          <strong>{getAssignee(issue)}</strong>
+          {isAdmin ? (
+            <Select
+              aria-label="Change issue assignee"
+              isDisabled={saving}
+              isSearchable
+              menuPortalTarget={document.body}
+              options={assigneeOptions}
+              placeholder="Select an assignee"
+              styles={selectStyles}
+              value={assigneeOptions.find(
+                (option) => String(option.value) === String(getAssigneeId(issue)),
+              ) || null}
+              onChange={(option) => {
+                if (option) adminUpdate({ assigned_to: option.value });
+              }}
+            />
+          ) : (
+            <strong>{getAssignee(issue)}</strong>
+          )}
         </div>
         <div className={styles.metadataField}>
           <span>Due Date</span>

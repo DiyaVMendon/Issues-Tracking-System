@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
 import { Readable } from "stream";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 const uploadAvatar = (file) =>
   new Promise((resolve, reject) => {
@@ -529,10 +531,7 @@ export const forgotPassword = async (req, res) => {
       });
     }
     const token = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crytpto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpires = Date.now() + 3600000;
@@ -551,7 +550,13 @@ export const forgotPassword = async (req, res) => {
         from: process.env.EMAIL_USER,
         to: user.email,
         subject: "Password Reset",
-        text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account. Please click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\nhttp://${req.headers.host}/reset-password/${token}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`,
+        text: `You are receiving this email because you (or someone else) have requested the reset of the password for your account.
+
+Please click on the following link to reset your password within one hour:
+
+${process.env.CLIENT_URL}/reset-password/${token}
+
+If you did not request this, please ignore this email and your password will remain unchanged.`,
       };
       await transporter.sendMail(mailOptions);
     } catch (error) {
